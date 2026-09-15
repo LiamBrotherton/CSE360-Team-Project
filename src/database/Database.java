@@ -60,6 +60,7 @@ public class Database {
 	private boolean currentAdminRole;
 	private boolean currentNewRole1;
 	private boolean currentNewRole2;
+	private boolean currentOnetimePasswordFlag;
 
 	/*******
 	 * <p> Method: Database </p>
@@ -116,7 +117,8 @@ public class Database {
 				+ "emailAddress VARCHAR(255), "
 				+ "adminRole BOOL DEFAULT FALSE, "
 				+ "newRole1 BOOL DEFAULT FALSE, "
-				+ "newRole2 BOOL DEFAULT FALSE)";
+				+ "newRole2 BOOL DEFAULT FALSE, "
+				+ "isOnetimePassword BOOL DEFAULT FALSE) ";
 		statement.execute(userTable);
 		
 		// Create the invitation codes table
@@ -833,6 +835,7 @@ public class Database {
 	    	currentAdminRole = rs.getBoolean(9);
 	    	currentNewRole1 = rs.getBoolean(10);
 	    	currentNewRole2 = rs.getBoolean(11);
+	    	currentOnetimePasswordFlag = rs.getBoolean(12);
 			return true;
 	    } catch (SQLException e) {
 			return false;
@@ -914,16 +917,24 @@ public class Database {
 	 * @param username is the username of the user
 	 *  
 	 * @param password is the new password for the user
+	 * 
+	 * @param isOnetimePassword is if it is a onetime password or not
 	 *  
 	 */
-	// update the email address
-	public void updatePassword(String username, String password) {
-	    String query = "UPDATE userDB SET password = ? WHERE username = ?";
+	// update the password
+	// overloads updatePassword so it can be called easier 
+	//since a onetime password isnt needed most of the time
+	public void updatePassword(String userName, String newPassword) {
+	    updatePassword(userName, newPassword, false);
+	}
+	
+	public void updatePassword(String username, String password, boolean isOnetimePassword) {
+	    String query = "UPDATE userDB SET password = ?, isOnetimePassword = ? WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 	        pstmt.setString(1, password);
-	        pstmt.setString(2, username);
+	        pstmt.setBoolean(2, isOnetimePassword);
+	        pstmt.setString(3, username);
 	        pstmt.executeUpdate();
-	        currentEmailAddress = password;
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    }
@@ -1039,6 +1050,16 @@ public class Database {
 	 *  
 	 */
 	public boolean getCurrentNewRole2() { return currentNewRole2;};
+	
+	/*******
+	 * <p> Method: boolean getCurrentNewRole2() </p>
+	 * 
+	 * <p> Description: Get the current user's Reviewer role attribute.</p>
+	 * 
+	 * @return true if this user plays a Reviewer role, else false
+	 *  
+	 */
+	public boolean getCurrentOnetimePasswordFlag() { return currentOnetimePasswordFlag;};
 
 	
 	/*******

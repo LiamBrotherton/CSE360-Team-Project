@@ -97,13 +97,18 @@ public class ControllerUserLogin {
     			theDatabase.getCurrentAdminRole(), 
     			theDatabase.getCurrentNewRole1(), theDatabase.getCurrentNewRole2());
     	
+    	// Make the user password reset if its a onetime password
+    	if (theDatabase.getCurrentOnetimePasswordFlag()) {
+    		System.out.println("** User has a onetime password; sending to password reset");
+			guiResetPassword.ViewResetPassword.displayResetPassword(theStage, user);
+    	} else {
+    	
     	// See which home page dispatch to use
 		int numberOfRoles = theDatabase.getNumberOfRoles(user);		
 		// System.out.println("*** The number of roles: "+ numberOfRoles);
 		if (numberOfRoles == 1) {
 			// Single Account Home Page - The user has no choice here
 			
-			// Admin role
 			if (user.getAdminRole()) {
 				loginResult = theDatabase.loginAdmin(user);
 				if (loginResult) {
@@ -129,6 +134,7 @@ public class ControllerUserLogin {
 			guiMultipleRoleDispatch.ViewMultipleRoleDispatch.
 				displayMultipleRoleDispatch(theStage, user);
 		}
+    	}
 	}
 	
 		

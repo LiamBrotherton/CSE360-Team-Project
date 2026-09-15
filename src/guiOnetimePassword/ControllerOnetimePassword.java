@@ -120,7 +120,8 @@ public class ControllerOnetimePassword {
 		
 		String password = ViewOnetimePassword.text_Password.getText();
 		
-		theDatabase.updatePassword(ViewOnetimePassword.theSelectedUser, password);
+		//updates database with onetime password flag set to true
+		theDatabase.updatePassword(ViewOnetimePassword.theSelectedUser, password, true);
         System.out.println("** Onetime Password Set ");
         
 	}
