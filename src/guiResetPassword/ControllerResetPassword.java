@@ -1,18 +1,16 @@
 package guiResetPassword;
 
-import java.sql.SQLException;
-
 import database.Database;
 import entityClasses.User;
+import javafx.stage.Stage;
 
 /*******
  * <p> Title: ControllerResetPassword Class. </p>
  * 
- * <p> Description: The Java/FX-based New Account Page.  This class provides the controller actions
- * to allow the user to establish a new account after responding to an invitation and the use of a
- * one time code.
+ * <p> Description: The Java/FX-based Reset Password Page.  This class provides the controller actions
+ * to allow the user to establish a new password.
  * 
- * The controller deals with the user pressing the "User Step" button widget being click.  If also
+ * The controller deals with the user pressing the "Confirm Password" button widget being click.  If also
  * supports the user click on the "Quit" button widget.
  * 
  * The class has been written assuming that the View or the Model are the only class methods that
@@ -50,7 +48,7 @@ public class ControllerResetPassword {
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
 	
 	/**********
-	 * <p> Method: public doCreateUser() </p>
+	 * <p> Method: public doResetPassword() </p>
 	 * 
 	 * <p> Description: This method is called when the user has clicked on the User Setup
 	 * button.  This method checks the input fields to see that they are valid.  If so, it then
@@ -60,68 +58,26 @@ public class ControllerResetPassword {
 	 * passing that information as parameters.
 	 * 
 	 */	
-	protected static void doCreateUser() {
+	protected static void doResetPassword(Stage theStage, User theUser) {
 		
-		// Fetch the username and password. (We use the first of the two here, but we will validate
+		// Fetch the password. (We use the first of the two here, but we will validate
 		// that the two password fields are the same before we do anything with it.)
-		String username = ViewResetPassword.text_Username.getText();
 		String password = ViewResetPassword.text_Password1.getText();
 		
 		// Display key information to the log
-		System.out.println("** Account for Username: " + username + "; theInvitationCode: "+
-				ViewResetPassword.theInvitationCode + "; email address: " + 
-				ViewResetPassword.emailAddress + "; Role: " + ViewResetPassword.theRole);
-		
-		// Initialize local variables that will be created during this process
-		int roleCode = 0;
-		User user = null;
+		System.out.println("** Account for Username: " + theUser.getUserName() + 
+				"; Attempting Password Reset");
 
 		// Make sure the two passwords are the same.	
 		if (ViewResetPassword.text_Password1.getText().
 				compareTo(ViewResetPassword.text_Password2.getText()) == 0) {
 			
-			// The passwords match so we will set up the role and the User object base on the 
-			// information provided in the invitation
-			if (ViewResetPassword.theRole.compareTo("Admin") == 0) {
-				roleCode = 1;
-				user = new User(username, password, "", "", "", "", "", true, false, false);
-			} else if (ViewResetPassword.theRole.compareTo("Role1") == 0) {
-				roleCode = 2;
-				user = new User(username, password, "", "", "", "", "", false, true, false);
-			} else if (ViewResetPassword.theRole.compareTo("Role2") == 0) {
-				roleCode = 3;
-				user = new User(username, password, "", "", "", "", "", false, false, true);
-			} else {
-				System.out.println(
-						"**** Trying to create a New Account for a role that does not exist!");
-				System.exit(0);
-			}
-			
-			// Unlike the FirstAdmin, we know the email address, so set that into the user as well.
-        	user.setEmailAddress(ViewResetPassword.emailAddress);
-
-        	// Inform the system about which role will be played
-			applicationMain.FoundationsMain.activeHomePage = roleCode;
-			
-        	// Create the account based on user and proceed to the user account update page
-            try {
-            	// Create a new User object with the pre-set role and register in the database
-            	theDatabase.register(user);
-            } catch (SQLException e) {
-                System.err.println("*** ERROR *** Database error: " + e.getMessage());
-                e.printStackTrace();
-                System.exit(0);
-            }
+			// The passwords match so we will set the new password			
+            theDatabase.updatePassword(theUser.getUserName(), password);
+            System.out.println("** Password Reset ");
             
-            // The account has been set, so remove the invitation from the system
-            theDatabase.removeInvitationAfterUse(
-            		ViewResetPassword.text_Invitation.getText());
-            
-            // Set the database so it has this user and the current user
-            theDatabase.getUserAccountDetails(username);
-
-            // Navigate to the Welcome Login Page
-            guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewResetPassword.theStage, user);
+            // Navigate to the Login Page to make the user re-login
+            guiUserLogin.ViewUserLogin.displayUserLogin(theStage);
 		}
 		else {
 			// The two passwords are NOT the same, so clear the passwords, explain the passwords

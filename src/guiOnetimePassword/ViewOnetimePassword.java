@@ -1,6 +1,5 @@
 package guiOnetimePassword;
 
-import java.util.ArrayList;
 import java.util.List;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -9,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
@@ -60,19 +61,13 @@ public class ViewOnetimePassword {
 	// Area 2a: This allows the admin to select a user of the system as the first step in adding or
 	// removing a role.  The act of selecting a user causes the change is the GUI.  The Admin does
 	// not need to push a button to make this happen.
-	protected static Label label_SelectUser = new Label("Select a user to be updated:");
+	protected static Label label_SelectUser = new Label("Select a user to set a password for:");
 	protected static ComboBox <String> combobox_SelectUser = new ComboBox <String>();
 	
 	// Area 2b: When a user has been selected these widgets are shown and can be used
-	protected static List<String> addList = new ArrayList<String>();
-	protected static Button button_AddRole = new Button("Add This Role");
-	protected static List<String> removeList = new ArrayList<String>();
-	protected static Button button_RemoveRole = new Button("Remove This Role");
-	protected static Label label_CurrentRoles = new Label("This user's current roles:");
-	protected static Label label_SelectRoleToBeAdded = new Label("Select a role to be added:");
-	protected static ComboBox <String> combobox_SelectRoleToAdd = new ComboBox <String>();	
-	protected static Label label_SelectRoleToBeRemoved = new Label("Select a role to be removed:");
-	protected static ComboBox <String> combobox_SelectRoleToRemove = new ComboBox <String>();
+	protected static PasswordField text_Password = new PasswordField();
+	protected static Button button_SetPassword = new Button("Set Password");
+	protected static Label label_SetaOnetimePassword = new Label("Set a onetime pasword:");
 		
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
@@ -99,8 +94,6 @@ public class ViewOnetimePassword {
 	
 	public static Scene theOnetimePasswordScene = null;	// The Scene each invocation populates
 	protected static String theSelectedUser = "";	// The user whose roles are being updated
-	protected static String theAddRole = "";		// The role being added
-	protected static String theRemoveRole = "";		// The roles being removed
 
 
 
@@ -149,7 +142,7 @@ public class ViewOnetimePassword {
 		// modes (1: user has not been selected, and 2: user has been selected) there are two
 		// lists of widgets to be displayed.  For this reason, we have implemented the following 
 		// two controller methods to deal with this dynamic aspect.
-		ControllerOnetimePassword.repaintTheWindow();
+		
 		ControllerOnetimePassword.doSelectUser();
 	}
 
@@ -189,7 +182,7 @@ public class ViewOnetimePassword {
 		// GUI Area 2a
 		setupLabelUI(label_SelectUser, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 130);
 		
-		setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 280, 125);
+		setupComboBoxUI(combobox_SelectUser, "Dialog", 16, 250, 350, 125);
 		List<String> userList = theDatabase.getUserList();	
 		combobox_SelectUser.setItems(FXCollections.observableArrayList(userList));
 		combobox_SelectUser.getSelectionModel().select(0);
@@ -199,17 +192,11 @@ public class ViewOnetimePassword {
     		@SuppressWarnings("unused") String newValue) -> {ControllerOnetimePassword.doSelectUser();});
 		
 		// GUI Area 2b
-		setupLabelUI(label_CurrentRoles, "Arial", 16, 300, Pos.BASELINE_LEFT, 50, 170);	
-		setupLabelUI(label_SelectRoleToBeAdded, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 210);
-		setupComboBoxUI(combobox_SelectRoleToAdd, "Dialog", 16, 150, 280, 205);
-		setupButtonUI(button_AddRole, "Dialog", 16, 150, Pos.CENTER, 460, 205);
-		ViewOnetimePassword.button_AddRole.setOnAction((_) -> 
-			{ControllerOnetimePassword.performAddRole(); });
-		setupButtonUI(button_RemoveRole, "Dialog", 16, 150, Pos.CENTER, 460, 275);			
-		ViewOnetimePassword.button_RemoveRole.setOnAction((_) -> 
-			{ControllerOnetimePassword.performRemoveRole(); });
-		setupLabelUI(label_SelectRoleToBeRemoved, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 280);	
-		setupComboBoxUI(combobox_SelectRoleToRemove, "Dialog", 16, 150, 280, 275);	
+		setupLabelUI(label_SetaOnetimePassword, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 210);
+		setupTextUI(text_Password, "Arial", 16, 200, Pos.BASELINE_LEFT, 250, 205, true);
+		setupButtonUI(button_SetPassword, "Dialog", 16, 150, Pos.CENTER, 470, 205);
+		ViewOnetimePassword.button_SetPassword.setOnAction((_) -> 
+			{ControllerOnetimePassword.performSetPassword(theStage, theUser); });		
 		
 		// GUI Area 3		
 		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);
@@ -293,4 +280,17 @@ public class ViewOnetimePassword {
 		c.setLayoutX(x);
 		c.setLayoutY(y);
 	}
+	
+	/**********
+	 * Private local method to initialize the standard fields for a text field
+	 */
+	private void setupTextUI(TextField t, String ff, double f, double w, Pos p, double x, double y, boolean e){
+		t.setFont(Font.font(ff, f));
+		t.setMinWidth(w);
+		t.setMaxWidth(w);
+		t.setAlignment(p);
+		t.setLayoutX(x);
+		t.setLayoutY(y);		
+		t.setEditable(e);
+	}	
 }

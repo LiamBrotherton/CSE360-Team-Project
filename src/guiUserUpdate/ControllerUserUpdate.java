@@ -58,7 +58,7 @@ public class ControllerUserUpdate {
 		}
  	}
 	
-	protected static void doResetPassword(Stage theStage) {
-		guiResetPassword.ViewResetPassword.displayResetPassword(theStage);
+	protected static void doCallResetPassword(Stage theStage, User theUser) {
+		guiResetPassword.ViewResetPassword.displayResetPassword(theStage, theUser);
 	}
 }

@@ -47,16 +47,11 @@ public class ViewResetPassword {
 	// invitation to the potential user.
 	private static Label label_ApplicationTitle = 
 			new Label("Reset Password Page");
-    protected static Label label_NewUserCreation = new Label(" User Account Creation.");
-    protected static Label label_NewUserLine = new Label("Please enter a username and a password.");
-    protected static TextField text_Username = new TextField();
+    protected static Label label_ResetPassword = new Label(" Reset Password ");
+    protected static Label label_ResetPasswordLine = new Label("Please enter a new password.");
     protected static PasswordField text_Password1 = new PasswordField();
     protected static PasswordField text_Password2 = new PasswordField();
-    protected static Button button_UserSetup = new Button("User Setup");
-    protected static TextField text_Invitation = new TextField();
-
-	// This alert is used should the invitation code be invalid
-    protected static Alert alertInvitationCodeIsInvalid = new Alert(AlertType.INFORMATION);
+    protected static Button button_ConfirmPassword = new Button("Confirm Password");
 
 	// This alert is used should the user enter two passwords that do not match
 	protected static Alert alertUsernamePasswordError = new Alert(AlertType.INFORMATION);
@@ -72,12 +67,7 @@ public class ViewResetPassword {
 	protected static Stage theStage;			// The Stage that JavaFX has established for us
 	private static Pane theRootPane;			// The Pane that holds all the GUI widgets 
 	protected static User theUser;				// The current logged in User
-   
-    protected static String theInvitationCode;	// The invitation code links to an email address
-    											// and a role for this user
-    protected static String emailAddress;		// Established here for use by the controller
-    protected static String theRole;			// Established here for use by the controller
-	public static Scene theNewAccountScene = null;	// Access to the User Update page's GUI Widgets
+	public static Scene theResetPasswordScene = null;	// Access to the User Update page's GUI Widgets
 	
 
 	/*-********************************************************************************************
@@ -87,10 +77,10 @@ public class ViewResetPassword {
 	*/
 
 	/**********
-	 * <p> Method: displayNewAccount(Stage ps, String ic) </p>
+	 * <p> Method: displayResetPassword(Stage ps, User user) </p>
 	 * 
-	 * <p> Description: This method is the single entry point from outside this package to cause
-	 * the NewAccount page to be displayed.
+	 * <p> Description: This method is the entry point from outside this package to cause
+	 * the ResetPassword page to be displayed.
 	 * 
 	 * It first sets up very shared attributes so we don't have to pass parameters.
 	 * 
@@ -104,43 +94,28 @@ public class ViewResetPassword {
 	 * 
 	 * @param ps specifies the JavaFX Stage to be used for this GUI and it's methods
 	 * 
-	 * @param ic specifies the user's invitation code for this GUI and it's methods
+	 * @param user specifies the user for this GUI and it's methods
 	 * 
 	 */
-	public static void displayResetPassword(Stage ps) {
-		// This is the only way some component of the system can cause a New User Account page to
-		// appear.  The first time, the class is created and initialized.  Every subsequent call it
-		// is reused with only the elements that differ being initialized.
+	public static void displayResetPassword(Stage ps, User user) {
 		
 		// Establish the references to the GUI and the current user
-		theStage = ps;				// Save the reference to the Stage for the rest of this package
-		//theInvitationCode = ic;		// Establish the invitation code so it can be easily accessed
+		theStage = ps;				// Save the reference to the Stage and user for the rest of this package
+		theUser = user;
 		
 		if (theView == null) theView = new ViewResetPassword();
 		
-		text_Username.setText("");	// Clear the input fields so previously entered values do not
-		text_Password1.setText("");	// appear for a new user
-		text_Password2.setText("");
-		
-		// Fetch the role for this user
-		theRole = theDatabase.getRoleGivenAnInvitationCode(theInvitationCode);
-		
-		if (theRole.length() == 0) {// If there is an issue with the invitation code, display a
-			alertInvitationCodeIsInvalid.showAndWait();	// dialog box saying that are when it it
-			return;					// acknowledged, return so the proper code can be entered
-		}
-		
-		// Get the email address associated with the invitation code
-		emailAddress = theDatabase.getEmailAddressUsingCode(theInvitationCode);
+		text_Password1.setText("");	
+		text_Password2.setText("");	
 		
     	// Place all of the established GUI elements into the pane
     	theRootPane.getChildren().clear();
-    	theRootPane.getChildren().addAll(label_NewUserCreation, label_NewUserLine, text_Username,
-    			text_Password1, text_Password2, button_UserSetup, button_Quit);    	
+    	theRootPane.getChildren().addAll(label_ResetPassword, label_ResetPasswordLine,
+    			text_Password1, text_Password2, button_ConfirmPassword, button_Quit);    	
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
-		theStage.setTitle("CSE 360 Foundation Code: New User Account Setup");	
-        theStage.setScene(theNewAccountScene);
+		theStage.setTitle("CSE 360 Foundation Code: Reset Password");	
+        theStage.setScene(theResetPasswordScene);
 		theStage.show();
 	}
 	
@@ -158,20 +133,16 @@ public class ViewResetPassword {
 		
 		// Create the Pane for the list of widgets and the Scene for the window
 		theRootPane = new Pane();
-		theNewAccountScene = new Scene(theRootPane, width, height);
+		theResetPasswordScene = new Scene(theRootPane, width, height);
 
-		// Label the Panle with the name of the startup screen, centered at the top of the pane
+		// Label the Panel with the name of the startup screen, centered at the top of the pane
 		setupLabelUI(label_ApplicationTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
 		
     	// Label to display the welcome message for the new user
-    	setupLabelUI(label_NewUserCreation, "Arial", 32, width, Pos.CENTER, 0, 10);
+    	setupLabelUI(label_ResetPassword, "Arial", 32, width, Pos.CENTER, 0, 10);
 	
     	// Label to display the  message for the first user
-    	setupLabelUI(label_NewUserLine, "Arial", 24, width, Pos.CENTER, 0, 70);
-		
-		// Establish the text input operand asking for a username
-		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
-		text_Username.setPromptText("Enter the Username");
+    	setupLabelUI(label_ResetPasswordLine, "Arial", 24, width, Pos.CENTER, 0, 70);
 		
 		// Establish the text input operand field for the password
 		setupTextUI(text_Password1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
@@ -180,20 +151,17 @@ public class ViewResetPassword {
 		// Establish the text input operand field to confirm the password
 		setupTextUI(text_Password2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, true);
 		text_Password2.setPromptText("Enter the Password Again");
-		
-		// If the invitation code is wrong, this alert dialog will tell the user
-		alertInvitationCodeIsInvalid.setTitle("Invalid Invitation Code");
-		alertInvitationCodeIsInvalid.setHeaderText("The invitation code is not valid.");
-		alertInvitationCodeIsInvalid.setContentText("Correct the code and try again.");
 
 		// If the passwords do not match, this alert dialog will tell the user
 		alertUsernamePasswordError.setTitle("Passwords Do Not Match");
 		alertUsernamePasswordError.setHeaderText("The two passwords must be identical.");
 		alertUsernamePasswordError.setContentText("Correct the passwords and try again.");
 
-        // Set up the account creation and login
-        setupButtonUI(button_UserSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
-        button_UserSetup.setOnAction((_) -> {ControllerResetPassword.doCreateUser(); });
+        // Take user to reset password page
+        setupButtonUI(button_ConfirmPassword, "Dialog", 18, 200, Pos.CENTER, 475, 210);
+        button_ConfirmPassword.setOnAction((_) -> {
+        	System.out.println("**** Calling doResetPassword");
+        	ControllerResetPassword.doResetPassword(theStage, theUser); });
 		
         // Enable the user to quit the application
         setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);

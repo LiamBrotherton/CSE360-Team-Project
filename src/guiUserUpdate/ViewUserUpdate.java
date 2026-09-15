@@ -257,8 +257,8 @@ public class ViewUserUpdate {
         setupLabelUI(label_CurrentPassword, "Arial", 18, 260, Pos.BASELINE_LEFT, 200, 150);
         setupButtonUI(button_UpdatePassword, "Dialog", 18, 275, Pos.CENTER, 500, 143);
         button_UpdatePassword.setOnAction((_) -> {
-        	System.out.println("**** Calling doResetPassword");
-			ControllerUserUpdate.doResetPassword(theStage);
+        	System.out.println("**** Calling doCallResetPassword");
+			ControllerUserUpdate.doCallResetPassword(theStage, theUser);
      		});
         
         // First Name
