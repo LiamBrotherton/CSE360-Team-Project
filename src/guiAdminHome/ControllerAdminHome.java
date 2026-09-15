@@ -107,8 +107,7 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: setOnetimePassword () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that allows an admin to set a onetime password for a user. </p>
 	 */
 	protected static void setOnetimePassword () {
 		guiOnetimePassword.ViewOnetimePassword.displayOnetimePassword(ViewAdminHome.theStage, 
