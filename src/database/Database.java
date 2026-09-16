@@ -223,6 +223,98 @@ public class Database {
 		
 	}
 	
+	
+/*******
+* <p> Method: Boolean deleteUser(String username) </p>
+* 
+* <p> Description: Deletes a user from the Database. This method cannot delete the last admin.</p>
+* 
+* @param username is the username of the user to be deleted
+* 
+* @return true if successfully deleted. Return false if unsuccessful. 
+*  
+*/
+	public boolean deleteUser(String username) {
+		
+		//do they exist and are they an admin?
+	    String query = "SELECT adminRole FROM userDB WHERE username = ?";
+	    
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        //if they don't exist, can't delete them
+	        if (!rs.next()) {
+	        	return false;
+	        	
+	        }
+	        
+	        boolean isAdmin = rs.getBoolean("adminRole");
+	        
+	        //are they the last admin? if so, they can't be deleted
+	        if (isAdmin && getNumberOfAdmins() <= 1) {
+	        	return false;
+	        }
+	        
+	    } catch (SQLException e) {
+	   		e.printStackTrace();
+	   		return false;
+	   	}
+	    
+	    String deleteQuery = "DELETE FROM userDB WHERE username = ?"; 
+	    
+		try (PreparedStatement pstmt = connection.prepareStatement(deleteQuery)) {
+	        pstmt.setString(1, username);
+	        
+	        int rowsDeleted = pstmt.executeUpdate();
+			
+	        //final safety check: if more than 0 things were updated, it will return true
+			return rowsDeleted > 0;		
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+	   	}
+	       
+	}
+
+	
+	
+/*******
+* <p> Method: List<User> getAllUserAccounts() </p>
+* 
+* <p> Description: Returns a list of User objects, one for each user account currently in
+* the database, populated with all stored attributes.</p>
+* 
+* @return a list of User objects representing every account in userDB.
+*/
+	public List<User> getAllUserAccounts() {
+	    List<User> userAccounts = new ArrayList<User>();
+	    String query = "SELECT * FROM userDB";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        ResultSet rs = pstmt.executeQuery();
+	        while (rs.next()) {
+	            String userName = rs.getString("userName");
+	            String password = rs.getString("password");
+	            String firstName = rs.getString("firstName");
+	            String middleName = rs.getString("middleName");
+	            String lastName = rs.getString("lastName");
+	            String preferredFirstName = rs.getString("preferredFirstName");
+	            String emailAddress = rs.getString("emailAddress");
+	            boolean adminRole = rs.getBoolean("adminRole");
+	            boolean newRole1 = rs.getBoolean("newRole1");
+	            boolean newRole2 = rs.getBoolean("newRole2");
+	            User user = new User(userName, password, firstName, middleName, lastName,
+	                    preferredFirstName, emailAddress, adminRole, newRole1, newRole2);
+	            userAccounts.add(user);
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return userAccounts;
+	}
+
+	
 /*******
  *  <p> Method: List getUserList() </p>
  *  
@@ -374,6 +466,28 @@ public class Database {
 		if (user.getNewRole2()) numberOfRoles++;
 		return numberOfRoles;
 	}	
+	
+	
+	/*******
+	 * <p> Method: getNumberOfAdmins </p>
+	 * 
+	 * <p> Description: Returns an integer.of the number of users currently an Admin. </p>
+	 * 
+	 * @return the number of user records Admins.
+	 * 
+	 */
+		public int getNumberOfAdmins() {
+			String query = "SELECT COUNT(*) AS count FROM userDB WHERE adminRole = TRUE";
+			try {
+				ResultSet resultSet = statement.executeQuery(query);
+				if (resultSet.next()) {
+					return resultSet.getInt("count");
+				}
+			} catch (SQLException e) {
+		        return 0;
+		    }
+			return 0;
+		}
 
 	
 	/*******
@@ -860,7 +974,14 @@ public class Database {
 	 */
 	// Update a users role
 	public boolean updateUserRole(String username, String role, String value) {
+		
 		if (role.compareTo("Admin") == 0) {
+			
+			//do not let last admin be removed, but let someone be added if there is one admin
+			if (value.compareTo("false") == 0 && getNumberOfAdmins() <= 1) {
+				return false; 
+			}
+
 			String query = "UPDATE userDB SET adminRole = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);

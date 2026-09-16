@@ -119,32 +119,30 @@ public class ControllerAdminHome {
 	 * 
 	 * Title: deleteUser () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that is allows an admin to delete someone's account
+	 * Confirmation must be given before an account is removed. If there is one admin
+	 * (or less than one), they cannot be deleted. </p>
 	 */
 	protected static void deleteUser() {
-		System.out.println("\n*** WARNING ***: Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("Delete User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		guiDeleteUser.ViewDeleteUser.displayDeleteUser(
+				ViewAdminHome.theStage, ViewAdminHome.theUser);
 	}
+
 	
 	/**********
 	 * <p> 
 	 * 
 	 * Title: listUsers () Method. </p>
 	 * 
-	 * <p> Description: Protected method that is currently a stub informing the user that
-	 * this function has not yet been implemented. </p>
+	 * <p> Description: Protected method that allows an admin to view a list of every user
+	 * account currently in the system.  This is done by invoking the ListUsers Page. There
+	 * is no need to specify the home page for the return as this can only be initiated by
+	 * an Admin.</p>
 	 */
 	protected static void listUsers() {
-		System.out.println("\n*** WARNING ***: List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("List User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+	    guiListUsers.ViewListUsers.displayListUsers(ViewAdminHome.theStage, ViewAdminHome.theUser);
 	}
+
 	
 	/**********
 	 * <p> 

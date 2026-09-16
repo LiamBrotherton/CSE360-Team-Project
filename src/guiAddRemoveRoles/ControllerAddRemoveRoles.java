@@ -6,7 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 
 /*******
- * <p> Title: ControllerOnetimePassword Class. </p>
+ * <p> Title: ControllerListUsers Class. </p>
  * 
  * <p> Description: The Java/FX-based Add Remove Roles Page.  This class provides the controller
  * actions basic on the user's use of the JavaFX GUI widgets defined by the View class.

@@ -1,4 +1,4 @@
-package guiOnetimePassword;
+package guiListUsers;
 
 /*******
  * <p> Title: ModelListUsers Class. </p>
@@ -15,6 +15,6 @@ package guiOnetimePassword;
  *  
  */
 
-public class ModelOnetimePassword {
+public class ModelListUsers {
 
 }
