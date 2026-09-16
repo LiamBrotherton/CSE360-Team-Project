@@ -95,7 +95,8 @@ public class ControllerUserLogin {
     			theDatabase.getCurrentMiddleName(), theDatabase.getCurrentLastName(), 
     			theDatabase.getCurrentPreferredFirstName(), theDatabase.getCurrentEmailAddress(), 
     			theDatabase.getCurrentAdminRole(), 
-    			theDatabase.getCurrentNewRole1(), theDatabase.getCurrentNewRole2());
+    			theDatabase.getCurrentContributorRole(), theDatabase.getCurrentViewerRole(),
+    			theDatabase.getCurrentCuratorRole());
     	
     	// Make the user password reset if its a onetime password
     	if (theDatabase.getCurrentOnetimePasswordFlag()) {
@@ -114,15 +115,20 @@ public class ControllerUserLogin {
 				if (loginResult) {
 					guiAdminHome.ViewAdminHome.displayAdminHome(theStage, user);
 				}
-			} else if (user.getNewRole1()) {
-				loginResult = theDatabase.loginRole1(user);
+			} else if (user.getContributorRole()) {
+				loginResult = theDatabase.loginContributor(user);
 				if (loginResult) {
-					guiRole1.ViewRole1Home.displayRole1Home(theStage, user);
+					guiContributor.ViewContributorHome.displayContributorHome(theStage, user);
 				}
-			} else if (user.getNewRole2()) {
-				loginResult = theDatabase.loginRole2(user);
+			} else if (user.getViewerRole()) {
+				loginResult = theDatabase.loginViewer(user);
 				if (loginResult) {
-					guiRole2.ViewRole2Home.displayRole2Home(theStage, user);
+					guiViewer.ViewViewerHome.displayViewerHome(theStage, user);
+				}
+			} else if (user.getCuratorRole()) {
+				loginResult = theDatabase.loginCurator(user);
+				if (loginResult) {
+					guiCurator.ViewCuratorHome.displayCuratorHome(theStage, user);
 				}
 				// Other roles
 			} else {

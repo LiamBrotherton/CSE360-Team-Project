@@ -157,8 +157,9 @@ public class ViewListUsers {
             User u = cellData.getValue();
             StringBuilder roles = new StringBuilder();
             if (u.getAdminRole()) roles.append("Admin ");
-            if (u.getNewRole1()) roles.append("Role1 ");
-            if (u.getNewRole2()) roles.append("Role2 ");
+            if (u.getContributorRole()) roles.append("Contributor ");
+            if (u.getViewerRole()) roles.append("Viewer ");
+            if (u.getCuratorRole()) roles.append("Curator ");
             return new javafx.beans.property.SimpleStringProperty(roles.toString().trim());
         });
 

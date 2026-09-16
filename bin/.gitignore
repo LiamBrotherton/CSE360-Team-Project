@@ -3,6 +3,8 @@
 /entityClasses/
 /guiAddRemoveRoles/
 /guiAdminHome/
+/guiContributor/
+/guiCurator/
 /guiDeleteUser/
 /guiFirstAdmin/
 /guiListUsers/
@@ -10,10 +12,9 @@
 /guiNewAccount/
 /guiOnetimePassword/
 /guiResetPassword/
-/guiRole1/
-/guiRole2/
 /guiTools/
 /guiUserLogin/
 /guiUserUpdate/
+/guiViewer/
 /module-info.class
 /userNameRecognizerTestbed/

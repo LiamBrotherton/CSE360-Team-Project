@@ -58,8 +58,9 @@ public class Database {
 	private String currentPreferredFirstName;
 	private String currentEmailAddress;
 	private boolean currentAdminRole;
-	private boolean currentNewRole1;
-	private boolean currentNewRole2;
+	private boolean currentContributorRole;
+	private boolean currentViewerRole;
+	private boolean currentCuratorRole;
 	private boolean currentOnetimePasswordFlag;
 
 	/*******
@@ -116,8 +117,9 @@ public class Database {
 				+ "preferredFirstName VARCHAR(255), "
 				+ "emailAddress VARCHAR(255), "
 				+ "adminRole BOOL DEFAULT FALSE, "
-				+ "newRole1 BOOL DEFAULT FALSE, "
-				+ "newRole2 BOOL DEFAULT FALSE, "
+				+ "contributorRole BOOL DEFAULT FALSE, "
+				+ "viewerRole BOOL DEFAULT FALSE, "
+				+ "curatorRole BOOL DEFAULT FALSE, "
 				+ "isOnetimePassword BOOL DEFAULT FALSE) ";
 		statement.execute(userTable);
 		
@@ -185,8 +187,8 @@ public class Database {
  */
 	public void register(User user) throws SQLException {
 		String insertUser = "INSERT INTO userDB (userName, password, firstName, middleName, "
-				+ "lastName, preferredFirstName, emailAddress, adminRole, newRole1, newRole2) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "lastName, preferredFirstName, emailAddress, adminRole, contributorRole, viewerRole, curatorRole) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
 			currentUsername = user.getUserName();
 			pstmt.setString(1, currentUsername);
@@ -212,11 +214,14 @@ public class Database {
 			currentAdminRole = user.getAdminRole();
 			pstmt.setBoolean(8, currentAdminRole);
 			
-			currentNewRole1 = user.getNewRole1();
-			pstmt.setBoolean(9, currentNewRole1);
+			currentContributorRole = user.getContributorRole();
+			pstmt.setBoolean(9, currentContributorRole);
 			
-			currentNewRole2 = user.getNewRole2();
-			pstmt.setBoolean(10, currentNewRole2);
+			currentViewerRole = user.getViewerRole();
+			pstmt.setBoolean(10, currentViewerRole);
+			
+			currentCuratorRole = user.getCuratorRole();
+			pstmt.setBoolean(11, currentCuratorRole);
 			
 			pstmt.executeUpdate();
 		}
@@ -302,10 +307,11 @@ public class Database {
 	            String preferredFirstName = rs.getString("preferredFirstName");
 	            String emailAddress = rs.getString("emailAddress");
 	            boolean adminRole = rs.getBoolean("adminRole");
-	            boolean newRole1 = rs.getBoolean("newRole1");
-	            boolean newRole2 = rs.getBoolean("newRole2");
+	            boolean contributorRole = rs.getBoolean("contributorRole");
+	            boolean viewerRole = rs.getBoolean("viewerRole");
+	            boolean curatorRole = rs.getBoolean("curatorRole");
 	            User user = new User(userName, password, firstName, middleName, lastName,
-	                    preferredFirstName, emailAddress, adminRole, newRole1, newRole2);
+	                    preferredFirstName, emailAddress, adminRole, contributorRole, viewerRole, curatorRole);
 	            userAccounts.add(user);
 	        }
 	    } catch (SQLException e) {
@@ -367,7 +373,7 @@ public class Database {
 	
 	
 /*******
- * <p> Method: boolean loginRole1(User user) </p>
+ * <p> Method: boolean loginContributor(User user) </p>
  * 
  * <p> Description: Check to see that a user with the specified username, password, and role
  * 		is the same as a row in the table for the username, password, and role. </p>
@@ -377,10 +383,10 @@ public class Database {
  * @return true if the specified user has been logged in as an Student else false.
  * 
  */
-	public boolean loginRole1(User user) {
+	public boolean loginContributor(User user) {
 		// Validates a student user's login credentials.
 		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
-				+ "newRole1 = TRUE";
+				+ "contributorRole = TRUE";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, user.getUserName());
 			pstmt.setString(2, user.getPassword());
@@ -393,7 +399,7 @@ public class Database {
 	}
 
 	/*******
-	 * <p> Method: boolean loginRole2(User user) </p>
+	 * <p> Method: boolean loginViewer(User user) </p>
 	 * 
 	 * <p> Description: Check to see that a user with the specified username, password, and role
 	 * 		is the same as a row in the table for the username, password, and role. </p>
@@ -404,9 +410,35 @@ public class Database {
 	 * 
 	 */
 	// Validates a reviewer user's login credentials.
-	public boolean loginRole2(User user) {
+	public boolean loginViewer(User user) {
 		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
-				+ "newRole2 = TRUE";
+				+ "viewerRole = TRUE";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, user.getUserName());
+			pstmt.setString(2, user.getPassword());
+			ResultSet rs = pstmt.executeQuery();
+			return rs.next();
+		} catch  (SQLException e) {
+		       e.printStackTrace();
+		}
+		return false;
+	}
+	
+	/*******
+	 * <p> Method: boolean loginCurator(User user) </p>
+	 * 
+	 * <p> Description: Check to see that a user with the specified username, password, and role
+	 * 		is the same as a row in the table for the username, password, and role. </p>
+	 * 
+	 * @param user specifies the specific user that should be logged in playing the Reviewer role.
+	 * 
+	 * @return true if the specified user has been logged in as an Student else false.
+	 * 
+	 */
+	// Validates a reviewer user's login credentials.
+	public boolean loginCurator(User user) {
+		String query = "SELECT * FROM userDB WHERE userName = ? AND password = ? AND "
+				+ "curatorRole = TRUE";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, user.getUserName());
 			pstmt.setString(2, user.getPassword());
@@ -462,8 +494,9 @@ public class Database {
 	public int getNumberOfRoles (User user) {
 		int numberOfRoles = 0;
 		if (user.getAdminRole()) numberOfRoles++;
-		if (user.getNewRole1()) numberOfRoles++;
-		if (user.getNewRole2()) numberOfRoles++;
+		if (user.getContributorRole()) numberOfRoles++;
+		if (user.getViewerRole()) numberOfRoles++;
+		if (user.getCuratorRole()) numberOfRoles++;
 		return numberOfRoles;
 	}	
 	
@@ -947,9 +980,10 @@ public class Database {
 	    	currentPreferredFirstName = rs.getString(7);
 	    	currentEmailAddress = rs.getString(8);
 	    	currentAdminRole = rs.getBoolean(9);
-	    	currentNewRole1 = rs.getBoolean(10);
-	    	currentNewRole2 = rs.getBoolean(11);
-	    	currentOnetimePasswordFlag = rs.getBoolean(12);
+	    	currentContributorRole = rs.getBoolean(10);
+	    	currentViewerRole = rs.getBoolean(11);
+	    	currentCuratorRole = rs.getBoolean(12);
+	    	currentOnetimePasswordFlag = rs.getBoolean(13);
 			return true;
 	    } catch (SQLException e) {
 			return false;
@@ -996,31 +1030,46 @@ public class Database {
 				return false;
 			}
 		}
-		if (role.compareTo("Role1") == 0) {
+		if (role.compareTo("Contributor") == 0) {
 			String query = "UPDATE userDB SET newRole1 = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);
 				pstmt.executeUpdate();
 				if (value.compareTo("true") == 0)
-					currentNewRole1 = true;
+					currentContributorRole = true;
 				else
-					currentNewRole1 = false;
+					currentContributorRole = false;
 				return true;
 			} catch (SQLException e) {
 				return false;
 			}
 		}
-		if (role.compareTo("Role2") == 0) {
+		if (role.compareTo("Viewer") == 0) {
+			String query = "UPDATE userDB SET newRole1 = ? WHERE username = ?";
+			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+				pstmt.setString(1, value);
+				pstmt.setString(2, username);
+				pstmt.executeUpdate();
+				if (value.compareTo("true") == 0)
+					currentViewerRole = true;
+				else
+					currentViewerRole = false;
+				return true;
+			} catch (SQLException e) {
+				return false;
+			}
+		}
+		if (role.compareTo("Curator") == 0) {
 			String query = "UPDATE userDB SET newRole2 = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);
 				pstmt.executeUpdate();
 				if (value.compareTo("true") == 0)
-					currentNewRole2 = true;
+					currentCuratorRole = true;
 				else
-					currentNewRole2 = false;
+					currentCuratorRole = false;
 				return true;
 			} catch (SQLException e) {
 				return false;
@@ -1152,32 +1201,43 @@ public class Database {
 
 	
 	/*******
-	 * <p> Method: boolean getCurrentNewRole1() </p>
+	 * <p> Method: boolean getCurrentContributorRole() </p>
 	 * 
-	 * <p> Description: Get the current user's Student role attribute.</p>
+	 * <p> Description: Get the current user's Contributor role attribute.</p>
 	 * 
-	 * @return true if this user plays a Student role, else false
+	 * @return true if this user plays a Contributor role, else false
 	 *  
 	 */
-	public boolean getCurrentNewRole1() { return currentNewRole1;};
+	public boolean getCurrentContributorRole() { return currentContributorRole;};
+	
+	
+	/*******
+	 * <p> Method: boolean getCurrentViewerRole() </p>
+	 * 
+	 * <p> Description: Get the current user's Viewer role attribute.</p>
+	 * 
+	 * @return true if this user plays a Viewer role, else false
+	 *  
+	 */
+	public boolean getCurrentViewerRole() { return currentViewerRole;};
 
 	
 	/*******
-	 * <p> Method: boolean getCurrentNewRole2() </p>
+	 * <p> Method: boolean getCurrentCuratorRole() </p>
 	 * 
-	 * <p> Description: Get the current user's Reviewer role attribute.</p>
+	 * <p> Description: Get the current user's Curator role attribute.</p>
 	 * 
-	 * @return true if this user plays a Reviewer role, else false
+	 * @return true if this user plays a Curator role, else false
 	 *  
 	 */
-	public boolean getCurrentNewRole2() { return currentNewRole2;};
+	public boolean getCurrentCuratorRole() { return currentCuratorRole;};
 	
 	/*******
-	 * <p> Method: boolean getCurrentNewRole2() </p>
+	 * <p> Method: boolean getCurrentOnetimePasswordFlag() </p>
 	 * 
-	 * <p> Description: Get the current user's Reviewer role attribute.</p>
+	 * <p> Description: Get the current user's onetime password flag.</p>
 	 * 
-	 * @return true if this user plays a Reviewer role, else false
+	 * @return true if this user has a onetime password
 	 *  
 	 */
 	public boolean getCurrentOnetimePasswordFlag() { return currentOnetimePasswordFlag;};
