@@ -1,12 +1,3 @@
-/applicationMain/
-/database/
-/entityClasses/
-/guiAddRemoveRoles/
-/guiAdminHome/
-/guiContributor/
-/guiCurator/
-/guiDeleteUser/
-/guiFirstAdmin/
 /guiListUsers/
 /guiMultipleRoleDispatch/
 /guiNewAccount/
@@ -16,5 +7,5 @@
 /guiUserLogin/
 /guiUserUpdate/
 /guiViewer/
-/module-info.class
 /userNameRecognizerTestbed/
+/applicationMain/

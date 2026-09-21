@@ -117,8 +117,11 @@ public class ControllerNewAccount {
             }
             
             // The account has been set, so remove the invitation from the system
-            theDatabase.removeInvitationAfterUse(
-            		ViewNewAccount.text_Invitation.getText());
+            // Use theInvitationCode, the value that actually brought this person to
+            // the page.  text_Invitation is declared but never populated and never
+            // shown, so passing it here sent an empty string and removed nothing,
+            // leaving every invitation code valid forever and reusable.
+            theDatabase.removeInvitationAfterUse(ViewNewAccount.theInvitationCode);
             
             // Set the database so it has this user and the current user
             theDatabase.getUserAccountDetails(username);

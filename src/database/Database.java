@@ -127,7 +127,9 @@ public class Database {
 	    String invitationCodesTable = "CREATE TABLE IF NOT EXISTS InvitationCodes ("
 	            + "code VARCHAR(10) PRIMARY KEY, "
 	    		+ "emailAddress VARCHAR(255), "
-	            + "role VARCHAR(10))";
+	            + "role VARCHAR(20))";	// 20, not 10: "Contributor" is 11 characters and
+	    											// would not fit, so inviting a Contributor
+	    											// failed at the insert
 	    statement.execute(invitationCodesTable);
 	}
 
@@ -239,6 +241,53 @@ public class Database {
 * @return true if successfully deleted. Return false if unsuccessful. 
 *  
 */
+/*******
+ * <p> Method: String getFoundingAdminUsername() </p>
+ *
+ * <p> Description: Returns the username of the account that set this system up.
+ *
+ * That is the row with the lowest id, because ids are assigned in creation order and the
+ * First Admin page only runs when the database is completely empty.  So the lowest id is
+ * always the original administrator.
+ *
+ * The lowest id overall is used rather than the lowest id that currently holds the Admin
+ * role, because the former never moves.  If it were the latter, demoting one admin would
+ * silently transfer the protection to somebody else.</p>
+ *
+ * @return the founding administrator's username, or null if there are no accounts yet.
+ *
+ */
+	public String getFoundingAdminUsername() {
+		String query = "SELECT userName FROM userDB ORDER BY id ASC LIMIT 1";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) return rs.getString("userName");
+		} catch (SQLException e) {
+			return null;
+		}
+		return null;
+	}
+
+	/*******
+	 * <p> Method: boolean isFoundingAdmin(String username) </p>
+	 *
+	 * <p> Description: Reports whether this account is the one that set the system up.
+	 *
+	 * That account cannot have its Admin role removed and cannot be deleted, even once
+	 * other administrators exist.  Without this, a second admin could demote or remove the
+	 * original one, and the last-admin rule would not notice because a second admin still
+	 * existed.</p>
+	 *
+	 * @param username the account to test
+	 *
+	 * @return true if this is the founding administrator.
+	 *
+	 */
+	public boolean isFoundingAdmin(String username) {
+		String founder = getFoundingAdminUsername();
+		return founder != null && founder.equals(username);
+	}
+
 	public boolean deleteUser(String username) {
 		
 		//do they exist and are they an admin?
@@ -258,6 +307,13 @@ public class Database {
 	        
 	        //are they the last admin? if so, they can't be deleted
 	        if (isAdmin && getNumberOfAdmins() <= 1) {
+	        	return false;
+	        }
+	        
+	        // The founding administrator cannot be deleted either.  Protecting the role but
+	        // not the account would leave the same hole open: a second admin could simply
+	        // delete the original account instead of demoting it.
+	        if (isFoundingAdmin(username)) {
 	        	return false;
 	        }
 	        
@@ -549,7 +605,15 @@ public class Database {
 	        pstmt.setString(3, role);
 	        pstmt.executeUpdate();
 	    } catch (SQLException e) {
-	        e.printStackTrace();
+	        /*
+	         * This previously printed the stack trace and then returned the code anyway, so
+	         * a failed insert looked exactly like a successful one: the Admin was shown an
+	         * invitation code that had never been stored, and the person receiving it was
+	         * told the code was invalid.  Returning null lets the caller say what happened.
+	         */
+	        System.out.println("*** ERROR ***: the invitation could not be stored: "
+	        		+ e.getMessage());
+	        return null;
 	    }
 	    return code;
 	}
@@ -1016,6 +1080,13 @@ public class Database {
 				return false; 
 			}
 
+			// The founding administrator keeps the Admin role permanently.  The rule above
+			// only protects the system from having no admins at all, so once a second admin
+			// exists it would happily let that second admin demote the original one.
+			if (value.compareTo("false") == 0 && isFoundingAdmin(username)) {
+				return false;
+			}
+
 			String query = "UPDATE userDB SET adminRole = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
@@ -1031,7 +1102,7 @@ public class Database {
 			}
 		}
 		if (role.compareTo("Contributor") == 0) {
-			String query = "UPDATE userDB SET newRole1 = ? WHERE username = ?";
+			String query = "UPDATE userDB SET contributorRole = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);
@@ -1046,7 +1117,7 @@ public class Database {
 			}
 		}
 		if (role.compareTo("Viewer") == 0) {
-			String query = "UPDATE userDB SET newRole1 = ? WHERE username = ?";
+			String query = "UPDATE userDB SET viewerRole = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);
@@ -1061,7 +1132,7 @@ public class Database {
 			}
 		}
 		if (role.compareTo("Curator") == 0) {
-			String query = "UPDATE userDB SET newRole2 = ? WHERE username = ?";
+			String query = "UPDATE userDB SET curatorRole = ? WHERE username = ?";
 			try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 				pstmt.setString(1, value);
 				pstmt.setString(2, username);

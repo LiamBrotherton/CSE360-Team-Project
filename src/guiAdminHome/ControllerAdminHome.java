@@ -74,6 +74,16 @@ public class ControllerAdminHome {
 		String theSelectedRole = (String) ViewAdminHome.combobox_SelectRole.getValue();
 		String invitationCode = theDatabase.generateInvitationCode(emailAddress,
 				theSelectedRole);
+
+		// A null code means the invitation was never stored, so say so rather than
+		// showing the Admin a code that nobody can use.
+		if (invitationCode == null) {
+			ViewAdminHome.alertEmailError.setContentText(
+					"The invitation could not be created. Please try again.");
+			ViewAdminHome.alertEmailError.showAndWait();
+			return;
+		}
+
 		String msg = "Code: " + invitationCode + " for role " + theSelectedRole + 
 				" was sent to: " + emailAddress;
 		System.out.println(msg);
