@@ -119,11 +119,22 @@ public class ControllerOnetimePassword {
 	protected static void performSetPassword(Stage theStage, User theUser) {
 		
 		String password = ViewOnetimePassword.text_Password.getText();
-		
+
+		// The onetime password becomes the selected user's real password until they reset it,
+		// so it has to satisfy the same requirements as any other password.  Without this the
+		// Admin could set an empty onetime password, which the user could then log in with.
+		String passwordProblem = guiTools.PasswordCheck.firstProblem(password);
+		if (passwordProblem.length() > 0) {
+			System.out.println("*** ERROR *** " + passwordProblem);
+			ViewOnetimePassword.alertPasswordRequirements.setContentText(passwordProblem);
+			ViewOnetimePassword.alertPasswordRequirements.showAndWait();
+			return;
+		}
+
 		//updates database with onetime password flag set to true
 		theDatabase.updatePassword(ViewOnetimePassword.theSelectedUser, password, true);
         System.out.println("** Onetime Password Set ");
-        
+
 	}
 	
 	

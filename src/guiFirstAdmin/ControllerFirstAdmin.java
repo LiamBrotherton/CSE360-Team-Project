@@ -121,8 +121,20 @@ public class ControllerFirstAdmin {
 			System.out.println(adminUsername.substring(0,inputRecognizer.UserNameRecognizer.userNameRecognizerIndexofError) + "\u21EB");
 			
 			return;
-		} 
-		
+		}
+
+		// Make sure the password satisfies the system's strength requirements.  This is checked
+		// before the two passwords are compared because the message describes the password
+		// itself, and because a password that cannot be used is worth reporting even when the
+		// user has typed it correctly twice.  The fields are deliberately not cleared here, so
+		// the user can correct what they typed rather than start over.
+		String passwordProblem = guiTools.PasswordCheck.firstProblem(adminPassword1);
+		if (passwordProblem.length() > 0) {
+			System.out.println("*** ERROR *** " + passwordProblem);
+			ViewFirstAdmin.label_PasswordsDoNotMatch.setText(passwordProblem);
+			return;
+		}
+
 		// Make sure the two passwords are the same
 		if (adminPassword1.compareTo(adminPassword2) == 0) {
         	// Create the passwords and proceed to the user home page

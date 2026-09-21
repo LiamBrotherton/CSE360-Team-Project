@@ -5,6 +5,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -68,6 +70,11 @@ public class ViewOnetimePassword {
 	protected static PasswordField text_Password = new PasswordField();
 	protected static Button button_SetPassword = new Button("Set Password");
 	protected static Label label_SetaOnetimePassword = new Label("Set a onetime pasword:");
+
+	// This alert is used should the onetime password not satisfy the strength requirements.
+	// The onetime password becomes the user's real password until they reset it, so it is held
+	// to the same requirements as any other password.
+	protected static Alert alertPasswordRequirements = new Alert(AlertType.INFORMATION);
 		
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
@@ -195,8 +202,13 @@ public class ViewOnetimePassword {
 		setupLabelUI(label_SetaOnetimePassword, "Arial", 20, 300, Pos.BASELINE_LEFT, 20, 210);
 		setupTextUI(text_Password, "Arial", 16, 200, Pos.BASELINE_LEFT, 250, 205, true);
 		setupButtonUI(button_SetPassword, "Dialog", 16, 150, Pos.CENTER, 470, 205);
-		ViewOnetimePassword.button_SetPassword.setOnAction((_) -> 
-			{ControllerOnetimePassword.performSetPassword(theStage, theUser); });		
+		ViewOnetimePassword.button_SetPassword.setOnAction((_) ->
+			{ControllerOnetimePassword.performSetPassword(theStage, theUser); });
+
+		// If the onetime password is too weak, this alert tells the Admin what is missing.
+		// The content text is set by the controller, since it depends on the password typed.
+		alertPasswordRequirements.setTitle("Password Requirements");
+		alertPasswordRequirements.setHeaderText("That password cannot be used.");
 		
 		// GUI Area 3		
 		setupButtonUI(button_Return, "Dialog", 18, 210, Pos.CENTER, 20, 540);

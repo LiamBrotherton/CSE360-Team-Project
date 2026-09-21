@@ -61,6 +61,11 @@ public class ViewNewAccount {
 	// This alert is used should the user enter two passwords that do not match
 	protected static Alert alertUsernamePasswordError = new Alert(AlertType.INFORMATION);
 
+	// This alert is used should the password not satisfy the strength requirements.  It is a
+	// separate alert from the one above because that one's title and header are fixed at
+	// construction and describe a mismatch, which is a different problem.
+	protected static Alert alertPasswordRequirements = new Alert(AlertType.INFORMATION);
+
     protected static Button button_Quit = new Button("Quit");
 
 	// These attributes are used to configure the page and populate it with this user's information
@@ -190,6 +195,11 @@ public class ViewNewAccount {
 		alertUsernamePasswordError.setTitle("Passwords Do Not Match");
 		alertUsernamePasswordError.setHeaderText("The two passwords must be identical.");
 		alertUsernamePasswordError.setContentText("Correct the passwords and try again.");
+
+		// If the password is too weak, this alert dialog will tell the user what is missing.
+		// The content text is set by the controller, since it depends on the password typed.
+		alertPasswordRequirements.setTitle("Password Requirements");
+		alertPasswordRequirements.setHeaderText("That password cannot be used.");
 
         // Set up the account creation and login
         setupButtonUI(button_UserSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);

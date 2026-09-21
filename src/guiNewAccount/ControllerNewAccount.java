@@ -83,8 +83,21 @@ public class ControllerNewAccount {
 			System.out.println(username.substring(0,inputRecognizer.UserNameRecognizer.userNameRecognizerIndexofError) + "\u21EB");
 					
 			return;
-		} 
-		
+		}
+
+		// Make sure the password satisfies the system's strength requirements.  This is checked
+		// before the two passwords are compared because the message describes the password
+		// itself, and because a password that cannot be used is worth reporting even when the
+		// user has typed it correctly twice.  The fields are deliberately not cleared here, so
+		// the user can correct what they typed rather than start over.
+		String passwordProblem = guiTools.PasswordCheck.firstProblem(password);
+		if (passwordProblem.length() > 0) {
+			System.out.println("*** ERROR *** " + passwordProblem);
+			ViewNewAccount.alertPasswordRequirements.setContentText(passwordProblem);
+			ViewNewAccount.alertPasswordRequirements.showAndWait();
+			return;
+		}
+
 		// Display key information to the log
 		System.out.println("** Account for Username: " + username + "; theInvitationCode: "+
 				ViewNewAccount.theInvitationCode + "; email address: " + 

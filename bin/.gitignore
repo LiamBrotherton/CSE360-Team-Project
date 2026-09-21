@@ -1,3 +1,4 @@
+/applicationMain/
 /database/
 /entityClasses/
 /fPasswordEvaluationTestbedMain/
@@ -17,6 +18,6 @@
 /guiUserLogin/
 /guiUserUpdate/
 /guiViewer/
-/listUsersTesting/
-/userNameRecognizerTestbed/
 /inputRecognizer/
+/listUsersTesting/
+/module-info.class
