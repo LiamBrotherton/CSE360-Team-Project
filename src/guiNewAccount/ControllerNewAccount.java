@@ -67,6 +67,24 @@ public class ControllerNewAccount {
 		String username = ViewNewAccount.text_Username.getText();
 		String password = ViewNewAccount.text_Password1.getText();
 		
+		// Make sure the username is valid
+		String errMessage = inputRecognizer.UserNameRecognizer.checkForValidUserName(username);
+					
+			// If the returned String is not empty, it is an error message
+		if (errMessage != "") {
+			// Display the error message
+			System.out.println(errMessage);
+					
+			// Fetch the index where the processing of the input stopped
+			if (inputRecognizer.UserNameRecognizer.userNameRecognizerIndexofError <= -1) return;	// Should never happen
+			// Display the input line so the user can see what was entered		
+			System.out.println(username);
+					// Display the line up to the error and the display an up arrow
+			System.out.println(username.substring(0,inputRecognizer.UserNameRecognizer.userNameRecognizerIndexofError) + "\u21EB");
+					
+			return;
+		} 
+		
 		// Display key information to the log
 		System.out.println("** Account for Username: " + username + "; theInvitationCode: "+
 				ViewNewAccount.theInvitationCode + "; email address: " + 

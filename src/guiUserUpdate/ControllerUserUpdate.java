@@ -64,4 +64,20 @@ public class ControllerUserUpdate {
 	protected static void doCallResetPassword(Stage theStage, User theUser) {
 		guiResetPassword.ViewResetPassword.displayResetPassword(theStage, theUser);
 	}
+	
+	protected static boolean isValidName(String name, String field) {
+	    if (name == null || name.length() < 1) {
+	        System.out.println("*** ERROR *** " + field + " must have at least 1 character\n");
+	        return false;
+	    }
+	    if (name.length() >= 30) {
+	        System.out.println("*** ERROR *** " + field + " must be shorter than 30 characters\n");
+	        return false;
+	    }
+	    if (!name.chars().allMatch(Character::isAlphabetic)) {
+	        System.out.println("*** ERROR *** " + field + " must contain only alphabetic characters\n");
+	        return false;
+	    }
+	    return true;
+	}
 }

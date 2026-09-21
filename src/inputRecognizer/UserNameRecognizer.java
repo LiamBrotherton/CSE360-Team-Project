@@ -1,4 +1,4 @@
-package userNameRecognizerTestbed;
+package inputRecognizer;
 
 
 public class UserNameRecognizer {

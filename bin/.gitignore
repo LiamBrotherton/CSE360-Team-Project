@@ -1,3 +1,13 @@
+/database/
+/entityClasses/
+/fPasswordEvaluationTestbedMain/
+/fPasswordPopUpWindow/
+/guiAddRemoveRoles/
+/guiAdminHome/
+/guiContributor/
+/guiCurator/
+/guiDeleteUser/
+/guiFirstAdmin/
 /guiListUsers/
 /guiMultipleRoleDispatch/
 /guiNewAccount/
@@ -7,5 +17,6 @@
 /guiUserLogin/
 /guiUserUpdate/
 /guiViewer/
+/listUsersTesting/
 /userNameRecognizerTestbed/
-/applicationMain/
+/inputRecognizer/

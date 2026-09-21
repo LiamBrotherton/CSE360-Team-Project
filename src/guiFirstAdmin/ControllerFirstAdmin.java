@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import database.Database;
 import entityClasses.User;
 import javafx.stage.Stage;
-import userNameRecognizerTestbed.UserNameRecognizer;
 
 /*******
  * <p> Title: ControllerFirstAdmin Class. </p>
@@ -107,7 +106,7 @@ public class ControllerFirstAdmin {
 	 */
 	protected static void doSetupAdmin(Stage ps, int r) {
 		// Make sure the username is valid
-		String errMessage = userNameRecognizerTestbed.UserNameRecognizer.checkForValidUserName(adminUsername);
+		String errMessage = inputRecognizer.UserNameRecognizer.checkForValidUserName(adminUsername);
 			
 			// If the returned String is not empty, it is an error message
 		if (errMessage != "") {
@@ -115,11 +114,11 @@ public class ControllerFirstAdmin {
 			System.out.println(errMessage);
 			
 			// Fetch the index where the processing of the input stopped
-			if (userNameRecognizerTestbed.UserNameRecognizer.userNameRecognizerIndexofError <= -1) return;	// Should never happen
+			if (inputRecognizer.UserNameRecognizer.userNameRecognizerIndexofError <= -1) return;	// Should never happen
 			// Display the input line so the user can see what was entered		
 			System.out.println(adminUsername);
 			// Display the line up to the error and the display an up arrow
-			System.out.println(adminUsername.substring(0,userNameRecognizerTestbed.UserNameRecognizer.userNameRecognizerIndexofError) + "\u21EB");
+			System.out.println(adminUsername.substring(0,inputRecognizer.UserNameRecognizer.userNameRecognizerIndexofError) + "\u21EB");
 			
 			return;
 		} 
