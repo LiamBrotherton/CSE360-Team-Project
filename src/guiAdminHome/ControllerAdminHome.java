@@ -68,8 +68,10 @@ public class ControllerAdminHome {
 		// Verify that the email address is valid - If not alert the user and return
 		String emailAddress = ViewAdminHome.text_InvitationEmailAddress.getText();
 		if (invalidEmailAddress(emailAddress)) {
-			return;
-		}
+	        ViewAdminHome.alertEmailError.setContentText(emailAddressErrorMessage);
+	        ViewAdminHome.alertEmailError.showAndWait();
+	        return;
+	    }
 		
 		// Check to ensure that we are not sending a second message with a new invitation code to
 		// the same email address.  
