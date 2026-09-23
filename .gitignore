@@ -1,0 +1,34 @@
+# Eclipse build output
+bin/
+target/
+
+# Eclipse project files
+.classpath
+.project
+.settings/
+
+# Compiled class files (in case any sneak in outside bin/)
+*.class
+
+# Log files
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Packaged files
+*.jar
+*.war
+*.ear
+
+# Eclipse workspace metadata (if versioning multiple projects)
+.metadata/
+
+# Maven (if used)
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Gradle (if used)
+.gradle/
+build/
