@@ -116,7 +116,6 @@ public class View {
 	 * to this View.  The very next thing the caller does is show the Stage that contains this
 	 * Pane and then it stops.</p>
 	 * 
-	 * @param primaryStage Specifies the Stage on which the GUI should be built.	 
 	 *
 
 	static public void setupView(Pane theRoot) {

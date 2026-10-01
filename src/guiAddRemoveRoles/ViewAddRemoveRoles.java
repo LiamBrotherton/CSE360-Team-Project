@@ -161,8 +161,8 @@ public class ViewAddRemoveRoles {
 	 * This method determines the location, size, font, color, and change and event handlers for
 	 * each GUI object. </p>
 	 * 
-	 * This is a singleton, so this is performed just one.  Subsequent uses fill in the changeable
-	 * fields using the displayAddRempoveRoles method.</p>
+	 * <p> This is a singleton, so this is performed just one.  Subsequent uses fill in the
+	 * changeable fields using the displayAddRempoveRoles method.</p>
 	 * 
 	 */
 	public ViewAddRemoveRoles() {

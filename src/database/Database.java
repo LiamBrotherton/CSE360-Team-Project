@@ -288,6 +288,18 @@ public class Database {
 		return founder != null && founder.equals(username);
 	}
 
+	/*******
+	 * <p> Method: boolean deleteUser(String username) </p>
+	 *
+	 * <p> Description: Deletes the specified user's account, refusing when that account is
+	 * 		an Admin and either it is the last remaining Admin or it is the founding
+	 * 		administrator's account.</p>
+	 *
+	 * @param username is the username of the account to delete
+	 *
+	 * @return true if the account was deleted, else false
+	 *
+	 */
 	public boolean deleteUser(String username) {
 		
 		//do they exist and are they an admin?
@@ -342,11 +354,11 @@ public class Database {
 	
 	
 /*******
-* <p> Method: List<User> getAllUserAccounts() </p>
-* 
+* <p> Method: List&lt;User&gt; getAllUserAccounts() </p>
+*
 * <p> Description: Returns a list of User objects, one for each user account currently in
 * the database, populated with all stored attributes.</p>
-* 
+*
 * @return a list of User objects representing every account in userDB.
 */
 	public List<User> getAllUserAccounts() {
@@ -381,7 +393,7 @@ public class Database {
  *  <p> Method: List getUserList() </p>
  *  
  *  <P> Description: Generate an List of Strings, one for each user in the database,
- *  starting with "<Select User>" at the start of the list. </p>
+ *  starting with "&lt;Select User&gt;" at the start of the list. </p>
  *  
  *  @return a list of userNames found in the database.
  */
@@ -1150,25 +1162,35 @@ public class Database {
 	}
 	
 	/*******
-	 * <p> Method: void updatePassword(String username, String password) </p>
-	 * 
+	 * <p> Method: void updatePassword(String userName, String newPassword) </p>
+	 *
 	 * <p> Description: Update the password of a user given that user's username and
-	 * 		the new password.</p>
-	 * 
-	 * @param username is the username of the user
-	 *  
-	 * @param password is the new password for the user
-	 * 
-	 * @param isOnetimePassword is if it is a onetime password or not
-	 *  
+	 * 		the new password.  This overload always clears the one-time-password flag,
+	 * 		since a one-time password isn't needed most of the time.</p>
+	 *
+	 * @param userName is the username of the user
+	 *
+	 * @param newPassword is the new password for the user
+	 *
 	 */
-	// update the password
-	// overloads updatePassword so it can be called easier 
-	//since a onetime password isnt needed most of the time
+	// overloads updatePassword so it can be called easier
 	public void updatePassword(String userName, String newPassword) {
 	    updatePassword(userName, newPassword, false);
 	}
-	
+
+	/*******
+	 * <p> Method: void updatePassword(String username, String password, boolean isOnetimePassword) </p>
+	 *
+	 * <p> Description: Update the password of a user given that user's username, the new
+	 * 		password, and whether that password is a one-time password.</p>
+	 *
+	 * @param username is the username of the user
+	 *
+	 * @param password is the new password for the user
+	 *
+	 * @param isOnetimePassword is if it is a onetime password or not
+	 *
+	 */
 	public void updatePassword(String username, String password, boolean isOnetimePassword) {
 	    String query = "UPDATE userDB SET password = ?, isOnetimePassword = ? WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
