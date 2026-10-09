@@ -1,5 +1,11 @@
 package fPasswordPopUpWindow;
 
+<<<<<<< Updated upstream
+=======
+/** Controller for the password pop-up window. */
+public class Controller {
+
+>>>>>>> Stashed changes
 /*******
  * <p> Title: Controller Class - Based on the current state and user input invoke the right action.
  * </p>
@@ -39,6 +45,9 @@ public class Controller {
 	 */
 	public Controller() {
 	}
+	
+	/** Creates a new Controller. */
+	public Controller() {}
 	
 	/*******
 	 * <p> Title: handleButtonPress - Handle the user action of clicking on the GUI's button</p>

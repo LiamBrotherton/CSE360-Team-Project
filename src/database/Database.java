@@ -287,6 +287,7 @@ public class Database {
 		String founder = getFoundingAdminUsername();
 		return founder != null && founder.equals(username);
 	}
+<<<<<<< Updated upstream
 
 	/*******
 	 * <p> Method: boolean deleteUser(String username) </p>
@@ -299,6 +300,13 @@ public class Database {
 	 *
 	 * @return true if the account was deleted, else false
 	 *
+=======
+	
+	/**
+	 * Deletes a user account.
+	 * @param username the username of the account to delete
+	 * @return true if the user was deleted, false otherwise
+>>>>>>> Stashed changes
 	 */
 	public boolean deleteUser(String username) {
 		
@@ -354,8 +362,13 @@ public class Database {
 	
 	
 /*******
+<<<<<<< Updated upstream
 * <p> Method: List&lt;User&gt; getAllUserAccounts() </p>
 *
+=======
+* <p> Method: {@code List<User> getAllUserAccounts()} </p>
+* 
+>>>>>>> Stashed changes
 * <p> Description: Returns a list of User objects, one for each user account currently in
 * the database, populated with all stored attributes.</p>
 *
@@ -393,7 +406,11 @@ public class Database {
  *  <p> Method: List getUserList() </p>
  *  
  *  <P> Description: Generate an List of Strings, one for each user in the database,
+<<<<<<< Updated upstream
  *  starting with "&lt;Select User&gt;" at the start of the list. </p>
+=======
+ *  starting with "{@code <Select User>}" at the start of the list. </p>
+>>>>>>> Stashed changes
  *  
  *  @return a list of userNames found in the database.
  */
@@ -1161,6 +1178,19 @@ public class Database {
 		return false;
 	}
 	
+	
+	// update the password
+	// overloads updatePassword so it can be called easier 
+	//since a onetime password isnt needed most of the time
+	/**
+	 * Updates a user's password.
+	 * @param userName the username of the account
+	 * @param newPassword the new password
+	 */
+	public void updatePassword(String userName, String newPassword) {
+	    updatePassword(userName, newPassword, false);
+	}
+	
 	/*******
 	 * <p> Method: void updatePassword(String userName, String newPassword) </p>
 	 *
@@ -1173,6 +1203,7 @@ public class Database {
 	 * @param newPassword is the new password for the user
 	 *
 	 */
+<<<<<<< Updated upstream
 	// overloads updatePassword so it can be called easier
 	public void updatePassword(String userName, String newPassword) {
 	    updatePassword(userName, newPassword, false);
@@ -1191,6 +1222,8 @@ public class Database {
 	 * @param isOnetimePassword is if it is a onetime password or not
 	 *
 	 */
+=======
+>>>>>>> Stashed changes
 	public void updatePassword(String username, String password, boolean isOnetimePassword) {
 	    String query = "UPDATE userDB SET password = ?, isOnetimePassword = ? WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
