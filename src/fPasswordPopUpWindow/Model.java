@@ -35,6 +35,9 @@ public class Model {
 	 * with respect to those requirements.  The results of that evaluation are display via the View
 	 * to the user and via the console.</p>
 	 */
+	
+	/** Creates a new Model. */
+	public Model() {}
 
 	protected static void updatePassword() {
 		View.resetAssessments();						// Reset the assessment flags to the
@@ -106,14 +109,21 @@ public class Model {
 	 * valid and point to the character of the error.  This will enhance the user experience.
 	 * 
 	 */
-
+	/** The error message text. */ 
 	public static String passwordErrorMessage = "";		// The error message text
+	/** The input being processed. */ 
 	public static String passwordInput = "";			// The input being processed
+	/** The index where the error was located. */
 	public static int passwordIndexofError = -1;		// The index where the error was located
+	/** True if an upper case letter was found. */ 
 	public static boolean foundUpperCase = false;
+	/** True if a lower case letter was found. */
 	public static boolean foundLowerCase = false;
+	/** True if a numeric digit was found. */
 	public static boolean foundNumericDigit = false;
+	/** True if a special character was found. */
 	public static boolean foundSpecialChar = false;
+	/** True if the password is long enough. */ 
 	public static boolean foundLongEnough = false;
 	private static String inputLine = "";				// The input line
 	private static char currentChar;					// The current character in the line

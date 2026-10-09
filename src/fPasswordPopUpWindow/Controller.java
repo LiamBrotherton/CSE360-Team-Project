@@ -1,5 +1,6 @@
 package fPasswordPopUpWindow;
 
+/** Controller for the password pop-up window. */
 public class Controller {
 
 /*******
@@ -29,6 +30,9 @@ public class Controller {
 	 * that require the invoking methods in the Model are done via the Observability Pattern, so 
 	 * there is no need for the controller to access the Model.
 	 */
+	
+	/** Creates a new Controller. */
+	public Controller() {}
 	
 	/*******
 	 * <p> Title: handleButtonPress - Handle the user action of clicking on the GUI's button</p>

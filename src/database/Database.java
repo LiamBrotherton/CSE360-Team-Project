@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import entityClasses.Lesson;
+import entityClasses.LessonList;
 import entityClasses.User;
 
 /*******
@@ -27,6 +29,8 @@ import entityClasses.User;
  * @version 2.00		2025-04-29 Updated and expanded from the version produce by Pravalika 
  * 							Mukkiri and Ishwarya Hidkimath Basavaraj
  * @version 2.01		2025-12-17 Minor updates for Spring 2026
+ * @version 2.02		2026-10-05 Added the lessonDB table and the lessons learned CRUD methods
+ * 							for HW2
  */
 
 /*
@@ -102,7 +106,8 @@ public class Database {
 /*******
  * <p> Method: createTables </p>
  * 
- * <p> Description: Used to create new instances of the two database tables used by this class.</p>
+ * <p> Description: Used to create new instances of the database tables used by this class
+	 * (userDB, InvitationCodes, and lessonDB).</p>
  * 
  */
 	private void createTables() throws SQLException {
@@ -131,6 +136,21 @@ public class Database {
 	    											// would not fit, so inviting a Contributor
 	    											// failed at the insert
 	    statement.execute(invitationCodesTable);
+	    
+	    // Create the lessons learned table
+	    String lessonTable = "CREATE TABLE IF NOT EXISTS lessonDB ("
+	    		+ "id INT AUTO_INCREMENT PRIMARY KEY, "
+	    		+ "title VARCHAR(255), "
+	    		+ "body VARCHAR(4000), "
+	    		+ "category VARCHAR(255), "
+	    		+ "titleLocked BOOL DEFAULT FALSE, "
+	    		+ "bodyLocked BOOL DEFAULT FALSE, "
+	    		+ "categoryLocked BOOL DEFAULT FALSE, "
+	    		+ "expWhatWasDone VARCHAR(2000), "
+	    		+ "expHowItWasDone VARCHAR(2000), "
+	    		+ "expDuration VARCHAR(255), "
+	    		+ "expEffort VARCHAR(255))";
+	    statement.execute(lessonTable);
 	}
 
 
@@ -287,7 +307,12 @@ public class Database {
 		String founder = getFoundingAdminUsername();
 		return founder != null && founder.equals(username);
 	}
-
+	
+	/**
+	 * Deletes a user account.
+	 * @param username the username of the account to delete
+	 * @return true if the user was deleted, false otherwise
+	 */
 	public boolean deleteUser(String username) {
 		
 		//do they exist and are they an admin?
@@ -342,7 +367,7 @@ public class Database {
 	
 	
 /*******
-* <p> Method: List<User> getAllUserAccounts() </p>
+* <p> Method: {@code List<User> getAllUserAccounts()} </p>
 * 
 * <p> Description: Returns a list of User objects, one for each user account currently in
 * the database, populated with all stored attributes.</p>
@@ -381,7 +406,7 @@ public class Database {
  *  <p> Method: List getUserList() </p>
  *  
  *  <P> Description: Generate an List of Strings, one for each user in the database,
- *  starting with "<Select User>" at the start of the list. </p>
+ *  starting with "{@code <Select User>}" at the start of the list. </p>
  *  
  *  @return a list of userNames found in the database.
  */
@@ -1149,6 +1174,19 @@ public class Database {
 		return false;
 	}
 	
+	
+	// update the password
+	// overloads updatePassword so it can be called easier 
+	//since a onetime password isnt needed most of the time
+	/**
+	 * Updates a user's password.
+	 * @param userName the username of the account
+	 * @param newPassword the new password
+	 */
+	public void updatePassword(String userName, String newPassword) {
+	    updatePassword(userName, newPassword, false);
+	}
+	
 	/*******
 	 * <p> Method: void updatePassword(String username, String password) </p>
 	 * 
@@ -1162,13 +1200,6 @@ public class Database {
 	 * @param isOnetimePassword is if it is a onetime password or not
 	 *  
 	 */
-	// update the password
-	// overloads updatePassword so it can be called easier 
-	//since a onetime password isnt needed most of the time
-	public void updatePassword(String userName, String newPassword) {
-	    updatePassword(userName, newPassword, false);
-	}
-	
 	public void updatePassword(String username, String password, boolean isOnetimePassword) {
 	    String query = "UPDATE userDB SET password = ?, isOnetimePassword = ? WHERE username = ?";
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -1313,6 +1344,311 @@ public class Database {
 	 */
 	public boolean getCurrentOnetimePasswordFlag() { return currentOnetimePasswordFlag;};
 
+	
+	/*******
+	 * <p> Method: int addLesson(String title, String body, String category) </p>
+	 * 
+	 * <p> Description: Create a new lesson with all three locked flags unlocked and no 
+	 * experience information.</p>
+	 * 
+	 * @param title specifies the title for the new lesson
+	 * 
+	 * @param body specifies the body for the new lesson
+	 * 
+	 * @param category specifies the category for the new lesson
+	 * 
+	 * @return the ID the database gave the new lesson, or -1 if it could not be saved
+	 * 
+	 */
+	public int addLesson(String title, String body, String category) {
+		String insert = "INSERT INTO lessonDB (title, body, category) VALUES (?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(insert, 
+				Statement.RETURN_GENERATED_KEYS)) {
+			pstmt.setString(1, title);
+			pstmt.setString(2, body);
+			pstmt.setString(3, category);
+			pstmt.executeUpdate();
+			try (ResultSet keys = pstmt.getGeneratedKeys()) {
+				if (keys.next()) return keys.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
+	
+	/*******
+	 * <p> Method: LessonList getAllLessons() </p>
+	 * 
+	 * <p> Description: Read every lesson in the database, in the order they were added.</p>
+	 * 
+	 * @return a LessonList holding all lessons
+	 * 
+	 */
+	public LessonList getAllLessons() {
+		List<Lesson> lessons = new ArrayList<Lesson>();
+		String query = "SELECT * FROM lessonDB ORDER BY id ASC";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) lessons.add(lessonFromRow(rs));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return new LessonList(lessons);
+	}
+	
+	
+	/*******
+	 * <p> Method: Lesson getLessonById(int lessonId) </p>
+	 * 
+	 * <p> Description: Read one lesson, with its locked flags and experience information.</p>
+	 * 
+	 * @param lessonId specifies the ID to read
+	 * 
+	 * @return the lesson, or null if there is no lesson with that ID
+	 * 
+	 */
+	public Lesson getLessonById(int lessonId) {
+		String query = "SELECT * FROM lessonDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, lessonId);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) return lessonFromRow(rs);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean updateLessonTitle(int lessonId, String title) </p>
+	 * 
+	 * <p> Description: Change the title of a lesson.</p>
+	 * 
+	 * @param lessonId specifies the lesson to change
+	 * 
+	 * @param title specifies the new title
+	 * 
+	 * @return true if the lesson was changed, else false
+	 * 
+	 */
+	public boolean updateLessonTitle(int lessonId, String title) {
+		return updateLessonText("title", lessonId, title);
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean updateLessonBody(int lessonId, String body) </p>
+	 * 
+	 * <p> Description: Change the body of a lesson.</p>
+	 * 
+	 * @param lessonId specifies the lesson to change
+	 * 
+	 * @param body specifies the new body
+	 * 
+	 * @return true if the lesson was changed, else false
+	 * 
+	 */
+	public boolean updateLessonBody(int lessonId, String body) {
+		return updateLessonText("body", lessonId, body);
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean updateLessonCategory(int lessonId, String category) </p>
+	 * 
+	 * <p> Description: Change the category of a lesson.</p>
+	 * 
+	 * @param lessonId specifies the lesson to change
+	 * 
+	 * @param category specifies the new category
+	 * 
+	 * @return true if the lesson was changed, else false
+	 * 
+	 */
+	public boolean updateLessonCategory(int lessonId, String category) {
+		return updateLessonText("category", lessonId, category);
+	}
+	
+	
+	// Only called by 3 above functions, user cannot set column
+	private boolean updateLessonText(String column, int lessonId, String value) {
+		String update = "UPDATE lessonDB SET " + column + " = ? WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(update)) {
+			pstmt.setString(1, value);
+			pstmt.setInt(2, lessonId);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean setLessonFieldLocked(int lessonId, String field, boolean locked) </p>
+	 * 
+	 * <p> Description: Lock or unlock one core field of a lesson.  This is the operation other 
+	 * roles use to stop a contributor from altering a field, and the tests use it to set a flag 
+	 * directly.</p>
+	 * 
+	 * @param lessonId specifies the lesson to change
+	 * 
+	 * @param field specifies Lesson.FIELD_TITLE, Lesson.FIELD_BODY, or Lesson.FIELD_CATEGORY
+	 * 
+	 * @param locked specifies true to lock the field, false to unlock it
+	 * 
+	 * @return true if the lesson was changed, else false
+	 * 
+	 */
+	public boolean setLessonFieldLocked(int lessonId, String field, boolean locked) {
+		String column;
+		if (Lesson.FIELD_TITLE.equals(field)) column = "titleLocked";
+		else if (Lesson.FIELD_BODY.equals(field)) column = "bodyLocked";
+		else if (Lesson.FIELD_CATEGORY.equals(field)) column = "categoryLocked";
+		else return false;
+		
+		String update = "UPDATE lessonDB SET " + column + " = ? WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(update)) {
+			pstmt.setBoolean(1, locked);
+			pstmt.setInt(2, lessonId);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean addExperienceInformation(int lessonId, String whatWasDone, 
+	 * String howItWasDone, String duration, String effort) </p>
+	 * 
+	 * <p> Description: Save experience information with an existing lesson.  If the lesson 
+	 * already has experience information it is replaced; a lesson holds one set.</p>
+	 * 
+	 * @param lessonId specifies the lesson to add to
+	 * 
+	 * @param whatWasDone specifies what was done
+	 * 
+	 * @param howItWasDone specifies how it was done
+	 * 
+	 * @param duration specifies how long it took, as text such as "2 hours"
+	 * 
+	 * @param effort specifies the effort used by the team members, as text such as "3 people"
+	 * 
+	 * @return true if the lesson was changed, else false
+	 * 
+	 */
+	public boolean addExperienceInformation(int lessonId, String whatWasDone, 
+			String howItWasDone, String duration, String effort) {
+		String update = "UPDATE lessonDB SET expWhatWasDone = ?, expHowItWasDone = ?, "
+				+ "expDuration = ?, expEffort = ? WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(update)) {
+			pstmt.setString(1, whatWasDone);
+			pstmt.setString(2, howItWasDone);
+			pstmt.setString(3, duration);
+			pstmt.setString(4, effort);
+			pstmt.setInt(5, lessonId);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean deleteLesson(int lessonId) </p>
+	 * 
+	 * <p> Description: Delete a lesson from the database.</p>
+	 * 
+	 * @param lessonId specifies the lesson to delete
+	 * 
+	 * @return true if the lesson was deleted, else false
+	 * 
+	 */
+	public boolean deleteLesson(int lessonId) {
+		String delete = "DELETE FROM lessonDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(delete)) {
+			pstmt.setInt(1, lessonId);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	
+	/*******
+	 * <p> Method: boolean lessonExists(int lessonId) </p>
+	 * 
+	 * <p> Description: Determine whether a lesson with this ID is in the database.</p>
+	 * 
+	 * @param lessonId specifies the ID to look for
+	 * 
+	 * @return true if it is there, else false
+	 * 
+	 */
+	public boolean lessonExists(int lessonId) {
+		String query = "SELECT COUNT(*) FROM lessonDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, lessonId);
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) return rs.getInt(1) > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	
+	/*******
+	 * <p> Method: int getNumberOfLessons() </p>
+	 * 
+	 * <p> Description: Determine the number of lessons currently in the database.</p>
+	 * 
+	 * @return the number of lessons
+	 * 
+	 */
+	public int getNumberOfLessons() {
+		String query = "SELECT COUNT(*) FROM lessonDB";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			ResultSet rs = pstmt.executeQuery();
+			if (rs.next()) return rs.getInt(1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
+	
+	
+	/*******
+	 * <p> Method: void clearAllLessons() </p>
+	 * 
+	 * <p> Description: Remove every lesson.  Needed for testing</p>
+	 * 
+	 */
+	public void clearAllLessons() {
+		try (PreparedStatement pstmt = connection.prepareStatement("DELETE FROM lessonDB")) {
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	// Builds a Lesson from the current row of a SELECT * FROM lessonDB
+	private Lesson lessonFromRow(ResultSet rs) throws SQLException {
+		return new Lesson(rs.getInt("id"), rs.getString("title"), rs.getString("body"),
+				rs.getString("category"), rs.getBoolean("titleLocked"), 
+				rs.getBoolean("bodyLocked"), rs.getBoolean("categoryLocked"),
+				rs.getString("expWhatWasDone"), rs.getString("expHowItWasDone"),
+				rs.getString("expDuration"), rs.getString("expEffort"));
+	}
+	
 	
 	/*******
 	 * <p> Debugging method</p>

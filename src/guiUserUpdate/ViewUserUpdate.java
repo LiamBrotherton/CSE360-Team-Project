@@ -15,6 +15,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import entityClasses.User;
 
+/** View for the user update page. */
 public class ViewUserUpdate {
 
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
@@ -55,7 +56,7 @@ public class ViewUserUpdate {
 	private static TextInputDialog dialogUpdatePreferredFirstName;
 	private static TextInputDialog dialogUpdateEmailAddresss;
 
-	// UI Alert for validation errors
+	/** UI Alert for validation errors. */
 	public static Alert alertUpdateError = new Alert(AlertType.ERROR);
 	
 	private static ViewUserUpdate theView;
@@ -64,9 +65,15 @@ public class ViewUserUpdate {
 	private static Pane theRootPane;
 	private static User theUser;
 
+	/** The Scene for the user update page. */
 	public static Scene theUserUpdateScene = null;
 	private static Optional<String> result;
 
+	/**
+	 * Displays the user update page.
+	 * @param ps the Stage to display the page
+	 * @param user the User whose information is being updated
+	 */
 	public static void displayUserUpdate(Stage ps, User user) {
 		theUser = user;
 		theStage = ps;

@@ -8,12 +8,16 @@ package fPasswordEvaluationTestbedMain;
  */
 public class ModifiedPasswordEvaluationTestingAutomation {
 	
+	/** Creates a new ModifiedPasswordEvaluationTestingAutomation. */
+	public ModifiedPasswordEvaluationTestingAutomation() {}
+	
 	static int numPassed = 0;	// Counter of the number of passed tests
 	static int numFailed = 0;	// Counter of the number of failed tests
 
-	/*
+	/**
 	 * This mainline displays a header to the console, performs a sequence of
 	 * test cases, and then displays a footer with a summary of the results
+	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {
 		/************** Test cases semi-automation report header **************/

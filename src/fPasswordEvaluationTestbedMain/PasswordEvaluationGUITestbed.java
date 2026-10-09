@@ -20,12 +20,18 @@ import javafx.stage.Stage;
  */
 
 public class PasswordEvaluationGUITestbed extends Application {
+	
+	/** Creates a new PasswordEvaluationGUITestbed. */
+	public PasswordEvaluationGUITestbed() {}
 
 	private String string_ApplicationTitle = new String("Specify Your Password");
 	
+	/** The Stage for the testbed. */
 	public static Stage theStage;
 
+	/** The width of the window. */
 	public final static double WINDOW_WIDTH = 500;
+	/** The height of the window. */
 	public final static double WINDOW_HEIGHT = 430;
 	
 	/**********
@@ -67,7 +73,7 @@ public class PasswordEvaluationGUITestbed extends Application {
 
 	/*******************************************************************************************************
 	 * This is the method that launches the JavaFX application
-	 * 
+	 * @param args command line arguments
 	 */
 	public static void main(String[] args) {				// This method may not be required
 		launch(args);										// for all JavaFX applications using

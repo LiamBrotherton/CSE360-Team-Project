@@ -16,5 +16,6 @@ package guiAdminHome;
  */
 
 public class ModelAdminHome {
-
+	/** Creates a new ModelAdminHome. */
+	public ModelAdminHome() {}
 }

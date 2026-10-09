@@ -62,6 +62,7 @@ public class ViewUserLogin {
 
 	private static Stage theStage;	
 	private static Pane theRootPane;
+	/** The Scene for the user login page. */
 	public static Scene theUserLoginScene = null;	
 
 
@@ -73,7 +74,11 @@ public class ViewUserLogin {
 	Constructor
 
 	 *********************************************************************************************/
-
+	
+	/**
+	 * Displays the user login page.
+	 * @param ps the Stage on which to display the page
+	 */
 	public static void displayUserLogin(Stage ps) {
 		
 		// Establish the references to the GUI. There is no current user yet.
