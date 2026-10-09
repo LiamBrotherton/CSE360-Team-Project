@@ -73,7 +73,8 @@ public class PasswordEvaluationGUITestbed extends Application {
 
 	/*******************************************************************************************************
 	 * This is the method that launches the JavaFX application
-	 * @param args command line arguments
+	 *
+	 * @param args the command line parameters.  These are not used.
 	 */
 	public static void main(String[] args) {				// This method may not be required
 		launch(args);										// for all JavaFX applications using

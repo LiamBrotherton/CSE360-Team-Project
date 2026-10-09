@@ -22,6 +22,11 @@ public class Controller {
  *
  */
 
+	
+
+public class Controller {
+
+	
 	/*-********************************************************************************************
 	 * The View's protected static objects enable the controller to interact with the other MVC 
 	 * objects used in this application.
@@ -30,6 +35,13 @@ public class Controller {
 	 * that require the invoking methods in the Model are done via the Observability Pattern, so 
 	 * there is no need for the controller to access the Model.
 	 */
+
+	
+	/**
+	 * Default constructor is not used.
+	 */
+	public Controller() {
+	}
 	
 	/** Creates a new Controller. */
 	public Controller() {}
@@ -50,6 +62,8 @@ public class Controller {
 	 * application and it hides the password GUI window from the user so no more changes to the
 	 * password can be made.</p>
 	 */
+	
+	
 
 	static protected void handleButtonPress() {
  		fPasswordEvaluationTestbedMain.PasswordEvaluationGUITestbed.theStage.hide();

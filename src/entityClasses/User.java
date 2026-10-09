@@ -42,23 +42,33 @@ public class User {
 
     
     /*****
-     * <p> Method: User(String userName, String password, boolean r1, boolean r2,
-     * 		boolean r3, boolean r4, boolean r5) </p>
-     * 
+     * <p> Method: User(String userName, String password, String fn, String mn, String ln,
+     * 		String pfn, String ea, boolean r1, boolean r2, boolean r3, boolean r4) </p>
+     *
      * <p> Description: This constructor is used to establish user entity objects. </p>
-     * 
+     *
      * @param userName specifies the account userName for this user
-     * 
+     *
      * @param password specifies the account password for this user
-     * 
+     *
+     * @param fn specifies the first name for this user
+     *
+     * @param mn specifies the middle name for this user
+     *
+     * @param ln specifies the last name for this user
+     *
+     * @param pfn specifies the preferred first name for this user
+     *
+     * @param ea specifies the email address for this user
+     *
      * @param r1 specifies the the Admin attribute (TRUE or FALSE) for this user
-     * 
+     *
      * @param r2 specifies the the Contributor attribute (TRUE or FALSE) for this user
-     * 
+     *
      * @param r3 specifies the the Viewer attribute (TRUE or FALSE) for this user
-     * 
+     *
      * @param r4 specifies the the Curator attribute (TRUE or FALSE) for this user
-     * 
+     *
      */
     // Constructor to initialize a new User object with userName, password, and role.
     public User(String userName, String password, String fn, String mn, String ln, String pfn, 
