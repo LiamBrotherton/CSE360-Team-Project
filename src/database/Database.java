@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import entityClasses.User;
+import lessonsLearned.Model;
 
 /*******
  * <p> Title: Database Class. </p>
@@ -131,6 +132,14 @@ public class Database {
 	    											// would not fit, so inviting a Contributor
 	    											// failed at the insert
 	    statement.execute(invitationCodesTable);
+	    
+	    String lessonsTable = "CREATE TABLE IF NOT EXISTS lessonsLearnedDB ("
+	            + "id VARCHAR(50) PRIMARY KEY, "
+	            + "title VARCHAR(100) NOT NULL, "
+	            + "body CLOB NOT NULL, " 
+	            + "category VARCHAR(100))";
+	    statement.execute(lessonsTable);
+	    System.out.println("Foundations Database Schema: 'lessonsLearnedDB' verified/created successfully.");
 	}
 
 
@@ -1358,4 +1367,122 @@ public class Database {
 			se.printStackTrace(); 
 		} 
 	}
+	
+	/*******
+	 * Here are the new methods for the individual HW2 assignment
+	 */
+	
+	public boolean insertLesson(String id, String title, String body, String category) {
+		String query = "INSERT INTO lessonsLearnedDB (id, title, body, category) VALUES (?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, id);
+			pstmt.setString(2, title);
+			pstmt.setString(3, body);
+			pstmt.setString(4, category);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public List<String[]> getLessonsById(String id) {
+		List<String[]> records = new ArrayList<>();
+		String query = "SELECT * FROM lessonsLearnedDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, id);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					records.add(new String[] {
+						rs.getString("id"),
+						rs.getString("title"),
+						rs.getString("body"),
+						rs.getString("category")
+					});
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return records;
+	}
+
+	public boolean updateLessonRecord(String id, String title, String body, String category) {
+		String query = "UPDATE lessonsLearnedDB SET title = ?, body = ?, category = ? WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, title);
+			pstmt.setString(2, body);
+			pstmt.setString(3, category);
+			pstmt.setString(4, id);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	public boolean removeLesson(String id) {
+		String query = "DELETE FROM lessonsLearnedDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, id);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+    public void dumpLessons() {
+        System.out.println("\n=======================================================");
+        System.out.println("   FOUNDATIONS PERSISTENT DATABASE ENGINE - CURRENT STATE");
+        System.out.println("=======================================================");
+        
+        try {
+            var allLessons = Model.getAllLessons(); 
+            
+            if (allLessons == null || allLessons.isEmpty()) {
+                System.out.println("  [Database Status]: Active storage is completely empty (0 records).");
+                System.out.println("=======================================================\n");
+                return;
+            }
+            
+            int recordCounter = 1;
+            for (var entry : allLessons) {
+                System.out.println(" Record #" + recordCounter);
+                System.out.println(" ├─ Unique ID   : " + entry.getId());
+                System.out.println(" ├─ Title       : " + entry.getTitle());
+                System.out.println(" ├─ Description : " + entry.getDescription());
+                System.out.println(" └─ Category Tag: " + entry.getContextType());
+                System.out.println(" ---------------------------------------------------");
+                recordCounter++;
+            }
+            
+            System.out.println("Total Persistent Records Managed: " + (recordCounter - 1));
+            
+        } catch (Exception e) {
+            System.err.println("Database Error: Failed to safely compile state dump: " + e.getMessage());
+        }
+        System.out.println("=======================================================\n");
+    }
+    
+    public List<String[]> getAllLessonsRecords() {
+        List<String[]> records = new ArrayList<>();
+        String query = "SELECT id, title, body, category FROM lessonsLearnedDB";
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                String[] row = new String[4];
+                row[0] = rs.getString("id");
+                row[1] = rs.getString("title");
+                row[2] = rs.getString("body");
+                row[3] = rs.getString("category");
+                records.add(row);
+            }
+        } catch (SQLException e) {
+            System.err.println("[Database Error] Failed to fetch all lessons: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return records;
+    }
 }

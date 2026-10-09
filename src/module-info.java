@@ -1,4 +1,8 @@
+/**
+ * Provides the main application module for FoundationsF26.
+ */
 module FoundationsF26 {
+	/** module directives here */
 	requires javafx.controls;
 	requires java.sql;
 	
