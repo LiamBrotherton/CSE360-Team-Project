@@ -36,6 +36,8 @@ import fPasswordEvaluationTestbedMain.PasswordEvaluationGUITestbed;
 
 public class View {
 
+	/** Creates a new View. */
+	public View() {}
 
 	/*
 	 * The following private objects are with GUI widgets that the view manages.

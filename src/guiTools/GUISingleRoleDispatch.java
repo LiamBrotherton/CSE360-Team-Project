@@ -59,7 +59,7 @@ public class GUISingleRoleDispatch {
 
 	
 	/**********
-	 * <p> Method: doSingleRoleDispatch(Stage ps, Pane theRoot, Database database, User user) </p>
+	 * <p> Method: doSingleRoleDispatch(Stage ps, User user) </p>
 	 * 
 	 * <p> Description: This method is called after a GUI page has already been established and
 	 * it is being display with potentially new contents for the various GUI elements. </p>
