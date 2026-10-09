@@ -66,10 +66,7 @@ public class GUISingleRoleDispatch {
 	 * 
 	 * @param ps specifies the JavaFX Stage to be used for this GUI and it's methods
 	 * 
-<<<<<<< Updated upstream
 	 * 
-=======
->>>>>>> Stashed changes
 	 * @param user specifies the User for this GUI and it's methods
 	 * 
 	 */

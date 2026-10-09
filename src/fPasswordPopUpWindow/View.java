@@ -35,7 +35,7 @@ import fPasswordEvaluationTestbedMain.PasswordEvaluationGUITestbed;
  */
 
 public class View {
-	
+
 	/** Creates a new View. */
 	public View() {}
 
@@ -117,6 +117,8 @@ public class View {
 	 * This "constructor" does not return a value as the caller will not be using a reference
 	 * to this View.  The very next thing the caller does is show the Stage that contains this
 	 * Pane and then it stops.</p>
+	 * 
+	 *
 
 	static public void setupView(Pane theRoot) {
 		theView = new View(theRoot);
