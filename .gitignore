@@ -32,3 +32,17 @@ Thumbs.db
 # Gradle (if used)
 .gradle/
 build/
+
+# Homework and project submission material (not source code)
+HW2/
+TP2/
+TP2 Planning and Tracking/
+Lessons_Learned_Javadocs/
+Contributor_Javadocs/
+ContributorTests_Javadocs/
+doc/
+
+# Recordings and archives
+*.mp4
+*.mov
+*.zip

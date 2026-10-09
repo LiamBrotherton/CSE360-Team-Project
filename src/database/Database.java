@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import entityClasses.Lesson;
+import entityClasses.LessonList;
 import entityClasses.User;
 
 /*******
@@ -131,6 +133,19 @@ public class Database {
 	    											// would not fit, so inviting a Contributor
 	    											// failed at the insert
 	    statement.execute(invitationCodesTable);
+
+	    // Create the lessons learned table.  The column sizes match the limits in
+	    // inputRecognizer.LessonRecognizer so anything that passes validation fits.
+	    String lessonTable = "CREATE TABLE IF NOT EXISTS lessonDB ("
+	            + "id INT AUTO_INCREMENT PRIMARY KEY, "
+	            + "title VARCHAR(100), "
+	            + "situation VARCHAR(2000), "
+	            + "lessonText VARCHAR(2000), "
+	            + "category VARCHAR(40), "
+	            + "tags VARCHAR(300), "		// 10 tags of 25 characters plus 9 commas is 259
+	            + "author VARCHAR(255), "
+	            + "createdAt BIGINT)";
+	    statement.execute(lessonTable);
 	}
 
 
@@ -1335,7 +1350,234 @@ public class Database {
 	 */
 	public boolean getCurrentOnetimePasswordFlag() { return currentOnetimePasswordFlag;};
 
-	
+
+	/*-********************************************************************************************
+
+	Lessons learned: Create, Read, Update, and Delete (CRUD)
+
+	These methods keep lessons in the same H2 database as the user accounts, so a lesson added in
+	one execution of the application is still there in the next.  They are deliberately plain
+	storage operations.  Whether a lesson's text is acceptable, and whether the person asking is
+	allowed to change it, are decided in lessonManagement.ControllerLessons before these methods
+	are called.  That keeps the rules in one place instead of spread across every caller.
+
+	*/
+
+	/*******
+	 * <p> Method: int createLesson(Lesson lesson) </p>
+	 *
+	 * <p> Description: Store a new lesson.  The database assigns the id and the creation time, so
+	 * whatever the lesson object holds for those two is ignored.</p>
+	 *
+	 * @param lesson specifies the lesson to store
+	 *
+	 * @return the id the database assigned to the new lesson, or -1 if it could not be stored
+	 *
+	 */
+	public int createLesson(Lesson lesson) {
+		String insert = "INSERT INTO lessonDB (title, situation, lessonText, category, tags, "
+				+ "author, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(insert,
+				Statement.RETURN_GENERATED_KEYS)) {
+			pstmt.setString(1, lesson.getTitle());
+			pstmt.setString(2, lesson.getSituation());
+			pstmt.setString(3, lesson.getLessonText());
+			pstmt.setString(4, lesson.getCategory());
+			pstmt.setString(5, lesson.getTags());
+			pstmt.setString(6, lesson.getAuthor());
+			pstmt.setLong(7, System.currentTimeMillis());
+			pstmt.executeUpdate();
+			try (ResultSet keys = pstmt.getGeneratedKeys()) {
+				if (keys.next()) return keys.getInt(1);
+			}
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not create the lesson: " + e.getMessage());
+		}
+		return -1;
+	}
+
+	/*******
+	 * <p> Method: Lesson getLesson(int id) </p>
+	 *
+	 * <p> Description: Read one lesson.</p>
+	 *
+	 * @param id specifies the id of the lesson to read
+	 *
+	 * @return the lesson, or null if there is no lesson with that id
+	 *
+	 */
+	public Lesson getLesson(int id) {
+		String query = "SELECT * FROM lessonDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, id);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) return rowToLesson(rs);
+			}
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not read the lesson: " + e.getMessage());
+		}
+		return null;
+	}
+
+	/*******
+	 * <p> Method: LessonList getAllLessons() </p>
+	 *
+	 * <p> Description: Read every stored lesson, newest first.</p>
+	 *
+	 * @return a list of every lesson, which is empty if there are none
+	 *
+	 */
+	public LessonList getAllLessons() {
+		return queryLessons("SELECT * FROM lessonDB ORDER BY createdAt DESC, id DESC", null);
+	}
+
+	/*******
+	 * <p> Method: LessonList getLessonsByAuthor(String author) </p>
+	 *
+	 * <p> Description: Read the lessons one Contributor added, newest first.</p>
+	 *
+	 * @param author specifies the username of the Contributor
+	 *
+	 * @return a list of that Contributor's lessons, which is empty if there are none
+	 *
+	 */
+	public LessonList getLessonsByAuthor(String author) {
+		return queryLessons("SELECT * FROM lessonDB WHERE author = ? "
+				+ "ORDER BY createdAt DESC, id DESC", author);
+	}
+
+	/*******
+	 * <p> Method: LessonList searchLessons(String keyword) </p>
+	 *
+	 * <p> Description: Read the lessons whose title, situation, lesson text, or tags contain a
+	 * keyword or phrase, ignoring upper and lower case, newest first.
+	 *
+	 * The keyword is matched literally.  A percent sign or underscore typed by the user is
+	 * escaped before it reaches the LIKE comparison, since otherwise a search for "100%" would
+	 * match every lesson containing "100" followed by anything at all.</p>
+	 *
+	 * @param keyword specifies the word or phrase to look for
+	 *
+	 * @return a list of the matching lessons, which is empty if none match
+	 *
+	 */
+	public LessonList searchLessons(String keyword) {
+		LessonList matches = new LessonList();
+		if (keyword == null) return matches;
+		String pattern = "%" + keyword.toLowerCase().replace("\\", "\\\\").replace("%", "\\%")
+				.replace("_", "\\_") + "%";
+		String query = "SELECT * FROM lessonDB WHERE LOWER(title) LIKE ? ESCAPE '\\' "
+				+ "OR LOWER(situation) LIKE ? ESCAPE '\\' "
+				+ "OR LOWER(lessonText) LIKE ? ESCAPE '\\' "
+				+ "OR LOWER(tags) LIKE ? ESCAPE '\\' "
+				+ "ORDER BY createdAt DESC, id DESC";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			for (int i = 1; i <= 4; i++) pstmt.setString(i, pattern);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) matches.add(rowToLesson(rs));
+			}
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not search the lessons: " + e.getMessage());
+		}
+		return matches;
+	}
+
+	/*******
+	 * <p> Method: boolean updateLesson(Lesson lesson) </p>
+	 *
+	 * <p> Description: Replace the title, situation, lesson text, category, and tags of the
+	 * stored lesson with the same id as the lesson passed in.  The author and the creation time
+	 * are never changed by an update, because they record who added the lesson and when.</p>
+	 *
+	 * @param lesson specifies the lesson carrying the id to update and the new values
+	 *
+	 * @return true if a lesson was updated, false if there was no lesson with that id
+	 *
+	 */
+	public boolean updateLesson(Lesson lesson) {
+		String update = "UPDATE lessonDB SET title = ?, situation = ?, lessonText = ?, "
+				+ "category = ?, tags = ? WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(update)) {
+			pstmt.setString(1, lesson.getTitle());
+			pstmt.setString(2, lesson.getSituation());
+			pstmt.setString(3, lesson.getLessonText());
+			pstmt.setString(4, lesson.getCategory());
+			pstmt.setString(5, lesson.getTags());
+			pstmt.setInt(6, lesson.getId());
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not update the lesson: " + e.getMessage());
+			return false;
+		}
+	}
+
+	/*******
+	 * <p> Method: boolean deleteLesson(int id) </p>
+	 *
+	 * <p> Description: Remove a lesson permanently.</p>
+	 *
+	 * @param id specifies the id of the lesson to delete
+	 *
+	 * @return true if a lesson was deleted, false if there was no lesson with that id
+	 *
+	 */
+	public boolean deleteLesson(int id) {
+		String delete = "DELETE FROM lessonDB WHERE id = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(delete)) {
+			pstmt.setInt(1, id);
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not delete the lesson: " + e.getMessage());
+			return false;
+		}
+	}
+
+	/*******
+	 * <p> Method: int getNumberOfLessons() </p>
+	 *
+	 * <p> Description: Count the stored lessons.</p>
+	 *
+	 * @return the number of lessons in the database
+	 *
+	 */
+	public int getNumberOfLessons() {
+		try (PreparedStatement pstmt = connection.prepareStatement(
+				"SELECT COUNT(*) AS count FROM lessonDB");
+				ResultSet rs = pstmt.executeQuery()) {
+			if (rs.next()) return rs.getInt("count");
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not count the lessons: " + e.getMessage());
+		}
+		return 0;
+	}
+
+	/*
+	 * Private helper shared by the list-returning queries above.  The one optional parameter is
+	 * the author, which is bound to the first placeholder when it is not null.
+	 */
+	private LessonList queryLessons(String query, String param) {
+		LessonList lessons = new LessonList();
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			if (param != null) pstmt.setString(1, param);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) lessons.add(rowToLesson(rs));
+			}
+		} catch (SQLException e) {
+			System.err.println("*** ERROR *** Could not read the lessons: " + e.getMessage());
+		}
+		return lessons;
+	}
+
+	/*
+	 * Private helper that turns the current row of a lessonDB result set into a Lesson.
+	 */
+	private Lesson rowToLesson(ResultSet rs) throws SQLException {
+		return new Lesson(rs.getInt("id"), rs.getString("title"), rs.getString("situation"),
+				rs.getString("lessonText"), rs.getString("category"), rs.getString("tags"),
+				rs.getString("author"), rs.getLong("createdAt"));
+	}
+
+
 	/*******
 	 * <p> Debugging method</p>
 	 * 
