@@ -1,6 +1,7 @@
 # Eclipse build output
 bin/
 target/
+doc/
 
 # Eclipse project files
 .classpath

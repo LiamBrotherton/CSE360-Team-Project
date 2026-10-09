@@ -3,14 +3,24 @@ package guiUserUpdate;
 import entityClasses.User;
 import javafx.stage.Stage;
 
+/**
+ * Controller class that handles the logic for updating user information
+ * in the GUI.
+ */
 public class ControllerUserUpdate {
 
+	/**
+	 * Constructs ControllerUserUpdate.
+	 */
 	public ControllerUserUpdate() {
 	}
 
 	// Finite State Machine variables matching ControllerAdminHome
+	/** The error message text. */
 	public static String nameErrorMessage = "";       // The error message text
+	/** The input being processed. */
 	public static String nameInput = "";              // The input being processed
+	/** The index where the error was located. */
 	public static int nameIndexofError = -1;          // The index where the error was located
 	private static int state = 0;                     // The current state value
 	private static int nextState = 0;                 // The next state value
@@ -21,8 +31,10 @@ public class ControllerUserUpdate {
 
 	
 	// Email validation state tracking
-		public static String emailAddressErrorMessage = "";
-		public static int emailAddressIndexofError = -1;
+	/** The error message text for the email address. */	
+	public static String emailAddressErrorMessage = "";
+	/** The index where the email error was located. */	
+	public static int emailAddressIndexofError = -1;
 
 		/**********
 		 * <p> Method: invalidEmailAddress(String emailAddress) </p>

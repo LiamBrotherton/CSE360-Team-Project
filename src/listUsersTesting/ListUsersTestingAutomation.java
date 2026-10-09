@@ -48,6 +48,9 @@ import guiListUsers.ModelListUsers;
  * 							roles, and added Section D to cover updateUserRole.
  */
 public class ListUsersTestingAutomation {
+	
+	/** Creates a new ListUsersTestingAutomation. */
+	public ListUsersTestingAutomation() {}
 
 	private static Database database;
 
@@ -60,9 +63,10 @@ public class ListUsersTestingAutomation {
 	private static String luNone;		// Plays no roles, middle and preferred are null
 	private static String luOne;		// Plays Contributor only, middle and preferred are ""
 
-	/*
+	/**
 	 * This mainline displays a header to the console, performs the four sections of test
 	 * cases, displays a summary of the results, and then removes the disposable accounts.
+	 * @param args command line arguments 
 	 */
 	public static void main(String[] args) {
 

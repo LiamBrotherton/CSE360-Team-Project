@@ -45,8 +45,11 @@ public class ControllerAdminHome {
 	
 	// Reference for the in-memory database so this package has access
 	private static Database theDatabase = applicationMain.FoundationsMain.database;
+	/** The error message text. */
 	public static String emailAddressErrorMessage = "";	// The error message text
+	/** The input being processed. */
 	public static String emailAddressInput = "";		// The input being processed
+	/** The index where the error was located. */
 	public static int emailAddressIndexofError = -1;	// The index where the error was located
 	private static int state = 0;						// The current state value
 	private static int nextState = 0;					// The next state value
