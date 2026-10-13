@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.UUID;
 
 import entityClasses.User;
+import entityClasses.LessonLearned;
+import entityClasses.LessonLearnedList;
 
 /*******
  * <p> Title: Database Class. </p>
@@ -47,6 +49,13 @@ public class Database {
 	//  Shared variables used within this class
 	private Connection connection = null;		// Singleton to access the database 
 	private Statement statement = null;			// The H2 Statement is used to construct queries
+	
+	/*
+	 * Stores the most recent lesson validation/database error.
+	 * This allows the GUI and automated tests to provide useful
+	 * feedback to the user without exposing SQL exceptions.
+	 */
+	private String lastLessonErrorMessage = "";
 	
 	// These are the easily accessible attributes of the currently logged-in user
 	// This is only useful for single user applications
@@ -102,7 +111,7 @@ public class Database {
 /*******
  * <p> Method: createTables </p>
  * 
- * <p> Description: Used to create new instances of the two database tables used by this class.</p>
+ * <p> Description: Used to create new instances of the three database tables used by this class.</p>
  * 
  */
 	private void createTables() throws SQLException {
@@ -131,6 +140,13 @@ public class Database {
 	    											// would not fit, so inviting a Contributor
 	    											// failed at the insert
 	    statement.execute(invitationCodesTable);
+	    
+	    String lessonsTable = "CREATE TABLE IF NOT EXISTS lessonsDB ("
+	            + "lessonID INT AUTO_INCREMENT PRIMARY KEY, "
+	            + "title VARCHAR(255), "
+	            + "description VARCHAR(5000), "
+	            + "creatorUsername VARCHAR(255))";
+	    statement.execute(lessonsTable);
 	}
 
 
@@ -230,17 +246,234 @@ public class Database {
 		
 	}
 	
+	/**
+	 * <p> Method: getLastLessonErrorMessage() </p>
+	 *
+	 * <p> Description: Returns the most recent error message generated
+	 * by a lesson operation. </p>
+	 *
+	 * @return the most recent lesson error message, or an empty string
+	 *         when there is no error.
+	 */
+	public String getLastLessonErrorMessage() {
+	    return lastLessonErrorMessage;
+	}
 	
-/*******
-* <p> Method: Boolean deleteUser(String username) </p>
-* 
-* <p> Description: Deletes a user from the Database. This method cannot delete the last admin.</p>
-* 
-* @param username is the username of the user to be deleted
-* 
-* @return true if successfully deleted. Return false if unsuccessful. 
-*  
-*/
+	/**
+	 * <p> Method: addLesson() </p>
+	 *
+	 * <p> Description: Adds a new LessonLearned object to the persistent
+	 * lessons database after validating the lesson input. </p>
+	 *
+	 * @param lesson specifies the lesson learned object to store.
+	 *
+	 * @return true if the lesson was successfully added, otherwise false.
+	 */
+	public boolean addLesson(LessonLearned lesson) {
+
+	    lastLessonErrorMessage = "";
+
+	    if (lesson == null) {
+	        lastLessonErrorMessage = "A lesson must be provided.";
+	        return false;
+	    }
+
+	    String validationError = lesson.validate();
+
+	    if (!validationError.isEmpty()) {
+	        lastLessonErrorMessage = validationError;
+	        return false;
+	    }
+
+	    String query = "INSERT INTO lessonsDB "
+	            + "(title, description, creatorUsername) "
+	            + "VALUES (?, ?, ?)";
+
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+	        pstmt.setString(1, lesson.getTitle());
+	        pstmt.setString(2, lesson.getDescription());
+	        pstmt.setString(3, lesson.getCreatorUsername());
+
+	        int rowsAdded = pstmt.executeUpdate();
+
+	        if (rowsAdded > 0) {
+	            return true;
+	        }
+
+	        lastLessonErrorMessage = "The lesson could not be added.";
+	        return false;
+
+	    } catch (SQLException e) {
+
+	        lastLessonErrorMessage =
+	                "The lesson could not be added to the database.";
+	        return false;
+	    }
+	}
+	
+	/**
+	 * <p> Method: getLesson() </p>
+	 *
+	 * <p> Description: Retrieves a LessonLearned object from the persistent
+	 * lessons database. </p>
+	 *
+	 * @param lessonID specifies the lesson learned object to store.
+	 *
+	 */
+	public LessonLearned getLesson(int lessonID) {
+
+	    String query = "SELECT * FROM lessonsDB WHERE lessonID = ?";
+
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+	        pstmt.setInt(1, lessonID);
+
+	        ResultSet rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+
+	            return new LessonLearned(
+	                    rs.getInt("lessonID"),
+	                    rs.getString("title"),
+	                    rs.getString("description"),
+	                    rs.getString("creatorUsername"));
+	        }
+
+	    } catch (SQLException e) {
+
+	        e.printStackTrace();
+	    }
+
+	    return null;
+	}
+	
+	/**
+	 * <p> Method: getContributorLessons() </p>
+	 *
+	 * <p> Description: Retrieves a LessonLearned object from the persistent
+	 * lessons database.  </p>
+	 *
+	 * @param creatorUsername supports the requirement that contributors can only read their own creations.
+	 *
+	 */
+	public LessonLearnedList getContributorLessons(String creatorUsername) {
+
+	    LessonLearnedList lessons = new LessonLearnedList();
+
+	    String query = "SELECT * FROM lessonsDB WHERE creatorUsername = ?";
+
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+	        pstmt.setString(1, creatorUsername);
+
+	        ResultSet rs = pstmt.executeQuery();
+
+	        while (rs.next()) {
+
+	            LessonLearned lesson = new LessonLearned(
+	                    rs.getInt("lessonID"),
+	                    rs.getString("title"),
+	                    rs.getString("description"),
+	                    rs.getString("creatorUsername"));
+
+	            lessons.addLesson(lesson);
+	        }
+
+	    } catch (SQLException e) {
+
+	        e.printStackTrace();
+	    }
+
+	    return lessons;
+	}
+	
+	/**
+	 * <p> Method: updateLesson() </p>
+	 *
+	 * <p> Description: Modifies a LessonLearned object in the persistent
+	 * lessons database after validating the lesson input. </p>
+	 *
+	 * @param lesson specifies the lesson learned object to update.
+	 *
+	 * @return true if the lesson was successfully modified, otherwise false.
+	 */
+	public boolean updateLesson(LessonLearned lesson) {
+
+	    lastLessonErrorMessage = "";
+
+	    if (lesson == null) {
+	        lastLessonErrorMessage = "A lesson must be provided.";
+	        return false;
+	    }
+
+	    String validationError = lesson.validate();
+
+	    if (!validationError.isEmpty()) {
+	        lastLessonErrorMessage = validationError;
+	        return false;
+	    }
+
+	    String query = "UPDATE lessonsDB SET "
+	            + "title = ?, "
+	            + "description = ?, "
+	            + "creatorUsername = ? "
+	            + "WHERE lessonID = ?";
+
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+	        pstmt.setString(1, lesson.getTitle());
+	        pstmt.setString(2, lesson.getDescription());
+	        pstmt.setString(3, lesson.getCreatorUsername());
+	        pstmt.setInt(4, lesson.getLessonID());
+
+	        int rowsUpdated = pstmt.executeUpdate();
+
+	        if (rowsUpdated > 0) {
+	            return true;
+	        }
+
+	        lastLessonErrorMessage =
+	                "The selected lesson could not be found.";
+	        return false;
+
+	    } catch (SQLException e) {
+
+	        lastLessonErrorMessage =
+	                "The lesson could not be updated in the database.";
+	        return false;
+	    }
+	}
+	
+	/**
+	 * <p> Method: DeleteLesson() </p>
+	 *
+	 * <p> Description: Deletes a LessonLearned object from the persistent
+	 * lessons database.  </p>
+	 *
+	 * @param lessonID specifies the lesson learned object to delete.
+	 *
+	 * @return true if the lesson was successfully deleted, otherwise false.
+	 */
+	public boolean deleteLesson(int lessonID) {
+
+	    String query = "DELETE FROM lessonsDB WHERE lessonID = ?";
+
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+	        pstmt.setInt(1, lessonID);
+
+	        int rowsDeleted = pstmt.executeUpdate();
+
+	        return rowsDeleted > 0;
+
+	    } catch (SQLException e) {
+
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+
 /*******
  * <p> Method: String getFoundingAdminUsername() </p>
  *
