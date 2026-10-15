@@ -3,5 +3,6 @@
   <deploy>
     <application name="FoundationsSP26"/>
     <info/>
+  </deploy>
   <signjar/>
 </anttasks:AntTask>
