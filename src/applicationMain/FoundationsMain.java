@@ -102,6 +102,8 @@ public class FoundationsMain extends Application {
 			System.exit(0);
 		}
 		
+		LessonConsole.start(database);
+		
 		// If the database is empty, no users have been established, so this user must be an admin
 		// user doing initial system startup activities and we need to set that admin's username
 		// and password using a special start you page.
