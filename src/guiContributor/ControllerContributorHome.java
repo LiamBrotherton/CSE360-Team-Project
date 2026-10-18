@@ -18,7 +18,10 @@ package guiContributor;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-17 Initial version
- * @version 1.01		2025-09-16 Update Javadoc documentation *  
+ * @version 1.01		2025-09-16 Update Javadoc documentation *
+ * @version 2.00		2026-10-16 Added the performAddLesson, performMyLessons, and
+ * 							performAddExperience actions for the three TP2 feature buttons.  Each
+ * 							opens the Coming Soon page until its feature is built.
  */
 
 public class ControllerContributorHome {
@@ -49,6 +52,43 @@ public class ControllerContributorHome {
 	protected static void performUpdate () {
 		guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewContributorHome.theStage, ViewContributorHome.theUser);
 	}	
+
+	/**********
+	 * <p> Method: performAddLesson() </p>
+	 *
+	 * <p> Description: This method directs the user to the Coming Soon page for adding a lesson.
+	 * It is a placeholder until the Add a Lesson page has been built. </p>
+	 *
+	 */
+	protected static void performAddLesson () {
+		guiComingSoon.ViewComingSoon.displayComingSoon(ViewContributorHome.theStage,
+				ViewContributorHome.theUser, "Add a lesson");
+	}
+
+	/**********
+	 * <p> Method: performMyLessons() </p>
+	 *
+	 * <p> Description: This method directs the user to the Coming Soon page for the list of the
+	 * lessons this Contributor has added.  It is a placeholder until the My Lessons page has been
+	 * built. </p>
+	 *
+	 */
+	protected static void performMyLessons () {
+		guiComingSoon.ViewComingSoon.displayComingSoon(ViewContributorHome.theStage,
+				ViewContributorHome.theUser, "My lessons");
+	}
+
+	/**********
+	 * <p> Method: performAddExperience() </p>
+	 *
+	 * <p> Description: This method directs the user to the Coming Soon page for adding experience
+	 * information to a lesson.  It is a placeholder until that page has been built. </p>
+	 *
+	 */
+	protected static void performAddExperience () {
+		guiComingSoon.ViewComingSoon.displayComingSoon(ViewContributorHome.theStage,
+				ViewContributorHome.theUser, "Add experience info");
+	}
 
 	/**********
 	 * <p> Method: performLogout() </p>

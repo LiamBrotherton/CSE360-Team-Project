@@ -9,11 +9,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import database.Database;
 import entityClasses.User;
+import guiTools.GuiStyle;
 
 /*******
  * <p> Title: ViewMultipleRoleDispatch Class. </p>
@@ -25,7 +25,14 @@ import entityClasses.User;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-20 Initial version
- *  
+ * @version 2.00		2026-10-16 Restyled to the team's user experience design: one card on a
+ * 							full-page gradient, with Logout and Quit below it.  The role list, the
+ * 							Perform Role button, and the actions are unchanged.
+ * @version 2.10		2026-10-17 Polish: the title "Choose a role", a "Signed in as" line, the
+ * 							button renamed "Continue", Logout moved onto the card, the shared font
+ * 							and type scale, and the quiet Quit button in the same corner as on every
+ * 							page.  The role list and the actions are unchanged.
+ *
  */
 
 public class ViewMultipleRoleDispatch {
@@ -46,23 +53,18 @@ public class ViewMultipleRoleDispatch {
 
 	// GUI Area 1: It informs the user about the purpose of this page and whose account is being
 	// used. There is no button to allow this user to update the account settings.
-	private static Label label_PageTitle = new Label("Multiple Role Dispatch Page");
+	private static Label label_PageTitle = new Label("Choose a role");
 	private static Label label_UserDetails = new Label();
-	
-	// This is a separator and it is used to partition the GUI for various tasks
-	private static Line line_Separator1 = new Line(20, 95, width-20, 95);
 
-	// GUI Area 2: This area consists of a label to ask the user what roles to place, a ComboBox 
-	// so the user can select the role, and a button to perform that role.
-	private static Label label_WhichRole = new Label("Which role do you wish to play:");
+	// GUI Area 2: This area consists of a label to ask the user what roles to place, a ComboBox
+	// so the user can select the role, and a button to perform that role.  Areas 1 and 2 sit on
+	// one card.
+	private static Label label_WhichRole = new Label("Role");
 	protected static ComboBox <String> combobox_SelectRole = new ComboBox <String>();
-	private static Button button_PerformRole = new Button("Perform Role");		
-	
-	// This is a separator and it is used to partition the GUI for various tasks
-	private static Line line_Separator4 = new Line(20, 525, width-20,525);
+	private static Button button_PerformRole = new Button("Continue");
 
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application and
-	// logging out.
+	// logging out.  Logout sits on the card; Quit sits in the corner GuiStyle gives it on every page.
 	private static Button button_Logout = new Button("Logout");
 	private static Button button_Quit = new Button("Quit");
 
@@ -101,11 +103,9 @@ public class ViewMultipleRoleDispatch {
 		List<String> list = new ArrayList<String>();	// Create a new list empty list
 		theDatabase.getUserAccountDetails(theUser.getUserName());
 		
-		label_UserDetails.setText("User: " + theUser.getUserName() + "   Select which role");
-		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.CENTER, 0, 50);
-
-		label_UserDetails.setText("User: " + theUser.getUserName());
-		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 55);			
+		label_UserDetails.setText("Signed in as " + theUser.getUserName());
+		setupLabelUI(label_UserDetails, "Arial", 13, 320, Pos.BASELINE_LEFT, 240, 192);
+		GuiStyle.styleMutedLabel(label_UserDetails);
 
 		System.out.println("*** Getting multiple role details for user: " + theUser.getUserName());
 		list = new ArrayList<String>();
@@ -144,41 +144,51 @@ public class ViewMultipleRoleDispatch {
 		theRootPane = new Pane();
 		theMultipleRoleDispatchScene = new Scene(theRootPane, width, height);
 
+		// The page is a single card on a full-page gradient, like the login page.  The card is
+		// centered across the window and every widget on it is 320 wide inside its margins.
+		GuiStyle.applyBackground(theRootPane);
+
 		// Populate the window with the title and other common widgets and set their static state
-		
+
 		// GUI Area 1
-		setupLabelUI(label_PageTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
+		setupLabelUI(label_PageTitle, "Arial", 26, 320, Pos.BASELINE_LEFT, 240, 154);
+		GuiStyle.stylePageTitle(label_PageTitle);
 
 		// GUI Area 2
-		setupLabelUI(label_WhichRole, "Arial", 20, 200, Pos.BASELINE_LEFT, 20, 110);
+		setupLabelUI(label_WhichRole, "Arial", 13, 320, Pos.BASELINE_LEFT, 240, 228);
+		GuiStyle.styleFieldLabel(label_WhichRole);
 
-		setupComboBoxUI(combobox_SelectRole, "Dialog", 16, 100, 305, 105);
+		setupComboBoxUI(combobox_SelectRole, "Dialog", 15, 320, 240, 248);
+		GuiStyle.styleComboBox(combobox_SelectRole);
 
-		setupButtonUI(button_PerformRole, "Dialog", 16, 100, Pos.CENTER, 495, 105);
-		button_PerformRole.setOnAction((_) -> 
+		setupButtonUI(button_PerformRole, "Dialog", 15, 320, Pos.CENTER, 240, 308);
+		GuiStyle.stylePrimaryButton(button_PerformRole);
+		button_PerformRole.setOnAction((_) ->
 		{guiMultipleRoleDispatch.ControllerMultipleRoleDispatch.performRole(); });
 
-		
-		// GUI Area 3		
-		setupButtonUI(button_Logout, "Dialog", 18, 250, Pos.CENTER, 20, 540);
-		button_Logout.setOnAction((_) -> 
+
+		// GUI Area 3
+		setupButtonUI(button_Logout, "Dialog", 15, 320, Pos.CENTER, 240, 358);
+		GuiStyle.styleSecondaryButton(button_Logout);
+		button_Logout.setOnAction((_) ->
 		{guiMultipleRoleDispatch.ControllerMultipleRoleDispatch.performLogout(); });
 
-		setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);
-		button_Quit.setOnAction((_) -> 
+		GuiStyle.styleQuitButton(button_Quit);
+		button_Quit.setOnAction((_) ->
 		{guiMultipleRoleDispatch.ControllerMultipleRoleDispatch.performQuit(); });
-		
+
 		// This is the end of the GUI Widgets for the page
 
-		// Place all of the just-initialized GUI elements into the pane
+		// Place all of the just-initialized GUI elements into the pane, the card first so it is
+		// drawn behind the rest
 		theRootPane.getChildren().addAll(
+				GuiStyle.createCard(200, 90, 400, 336),
+				GuiStyle.createLogo(240, 120),
 				label_PageTitle,
 				label_UserDetails,
-				line_Separator1,
 				label_WhichRole,
 				combobox_SelectRole,
 				button_PerformRole,
-				line_Separator4, 
 				button_Logout,
 				button_Quit);
 	}

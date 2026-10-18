@@ -9,10 +9,12 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import database.Database;
 import entityClasses.User;
+import guiTools.GuiStyle;
 
 /*******
  * <p> Title: ViewResetPassword Class. </p>
@@ -26,7 +28,13 @@ import entityClasses.User;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-19 Initial version
- *  
+ * @version 2.00		2026-10-16 Restyled to the team's user experience design: one card on a
+ * 							full-page gradient, matching the login page.  The fields, buttons,
+ * 							alerts, and actions are unchanged.
+ * @version 2.10		2026-10-17 Polish: a friendlier title and hint, a name above each field,
+ * 							the button renamed "Create account", the shared font and type scale,
+ * 							and the quiet Quit button in the same corner as on every page.
+ *
  */
 
 public class ViewNewAccount {
@@ -45,14 +53,17 @@ public class ViewNewAccount {
 	// This is a simple GUI login Page, very similar to the FirstAdmin login page.  The only real
 	// difference is in this case we also know an email address, since it was used to send the
 	// invitation to the potential user.
-	private static Label label_ApplicationTitle = 
-			new Label("Foundation Application Account Setup Page");
-    protected static Label label_NewUserCreation = new Label(" User Account Creation.");
-    protected static Label label_NewUserLine = new Label("Please enter a username and a password.");
+	private static Region card_NewAccount;		// The white card the widgets sit on
+	private static Pane logo_NewAccount;		// The logo at the top of the card
+    protected static Label label_NewUserCreation = new Label("Create your account");
+    protected static Label label_NewUserLine = new Label("Pick a username and a password to finish.");
+    private static Label label_Username = new Label("Username");
+    private static Label label_Password1 = new Label("Password");
+    private static Label label_Password2 = new Label("Confirm password");
     protected static TextField text_Username = new TextField();
     protected static PasswordField text_Password1 = new PasswordField();
     protected static PasswordField text_Password2 = new PasswordField();
-    protected static Button button_UserSetup = new Button("User Setup");
+    protected static Button button_UserSetup = new Button("Create account");
     protected static TextField text_Invitation = new TextField();
 
 	// This alert is used should the invitation code be invalid
@@ -138,10 +149,13 @@ public class ViewNewAccount {
 		// Get the email address associated with the invitation code
 		emailAddress = theDatabase.getEmailAddressUsingCode(theInvitationCode);
 		
-    	// Place all of the established GUI elements into the pane
+    	// Place all of the established GUI elements into the pane.  The pane is cleared and refilled
+    	// every time the page is shown, so the card and the logo must be put back each time, and
+    	// the card must come first so it is drawn behind everything else.
     	theRootPane.getChildren().clear();
-    	theRootPane.getChildren().addAll(label_NewUserCreation, label_NewUserLine, text_Username,
-    			text_Password1, text_Password2, button_UserSetup, button_Quit);    	
+    	theRootPane.getChildren().addAll(card_NewAccount, logo_NewAccount, label_NewUserCreation,
+    			label_NewUserLine, label_Username, text_Username, label_Password1, text_Password1,
+    			label_Password2, text_Password2, button_UserSetup, button_Quit);
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundation Code: New User Account Setup");	
@@ -165,26 +179,38 @@ public class ViewNewAccount {
 		theRootPane = new Pane();
 		theNewAccountScene = new Scene(theRootPane, width, height);
 
-		// Label the Panle with the name of the startup screen, centered at the top of the pane
-		setupLabelUI(label_ApplicationTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
-		
-    	// Label to display the welcome message for the new user
-    	setupLabelUI(label_NewUserCreation, "Arial", 32, width, Pos.CENTER, 0, 10);
-	
-    	// Label to display the  message for the first user
-    	setupLabelUI(label_NewUserLine, "Arial", 24, width, Pos.CENTER, 0, 70);
-		
-		// Establish the text input operand asking for a username
-		setupTextUI(text_Username, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, true);
+		// The page is a single card on a full-page gradient, like the login page.  The card is
+		// centered across the window and every widget below is 320 wide inside its margins.
+		GuiStyle.applyBackground(theRootPane);
+		card_NewAccount = GuiStyle.createCard(200, 50, 400, 428);
+		logo_NewAccount = GuiStyle.createLogo(240, 80);
+
+    	// The title of the card and a one-line hint below it
+    	setupLabelUI(label_NewUserCreation, "Arial", 26, 320, Pos.BASELINE_LEFT, 240, 114);
+    	GuiStyle.stylePageTitle(label_NewUserCreation);
+    	setupLabelUI(label_NewUserLine, "Arial", 13, 320, Pos.BASELINE_LEFT, 240, 152);
+    	GuiStyle.styleMutedLabel(label_NewUserLine);
+
+		// Establish the text input operand asking for a username, with its name above it
+    	setupLabelUI(label_Username, "Arial", 13, 320, Pos.BASELINE_LEFT, 240, 186);
+    	GuiStyle.styleFieldLabel(label_Username);
+		setupTextUI(text_Username, "Arial", 15, 320, Pos.BASELINE_LEFT, 240, 206, true);
 		text_Username.setPromptText("Enter the Username");
-		
+		GuiStyle.styleField(text_Username);
+
 		// Establish the text input operand field for the password
-		setupTextUI(text_Password1, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 210, true);
+    	setupLabelUI(label_Password1, "Arial", 13, 320, Pos.BASELINE_LEFT, 240, 258);
+    	GuiStyle.styleFieldLabel(label_Password1);
+		setupTextUI(text_Password1, "Arial", 15, 320, Pos.BASELINE_LEFT, 240, 278, true);
 		text_Password1.setPromptText("Enter the Password");
-		
+		GuiStyle.styleField(text_Password1);
+
 		// Establish the text input operand field to confirm the password
-		setupTextUI(text_Password2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, true);
+    	setupLabelUI(label_Password2, "Arial", 13, 320, Pos.BASELINE_LEFT, 240, 330);
+    	GuiStyle.styleFieldLabel(label_Password2);
+		setupTextUI(text_Password2, "Arial", 15, 320, Pos.BASELINE_LEFT, 240, 350, true);
 		text_Password2.setPromptText("Enter the Password Again");
+		GuiStyle.styleField(text_Password2);
 		
 		// If the invitation code is wrong, this alert dialog will tell the user
 		alertInvitationCodeIsInvalid.setTitle("Invalid Invitation Code");
@@ -202,11 +228,13 @@ public class ViewNewAccount {
 		alertPasswordRequirements.setHeaderText("That password cannot be used.");
 
         // Set up the account creation and login
-        setupButtonUI(button_UserSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
+        setupButtonUI(button_UserSetup, "Dialog", 15, 320, Pos.CENTER, 240, 410);
+        GuiStyle.stylePrimaryButton(button_UserSetup);
         button_UserSetup.setOnAction((_) -> {ControllerNewAccount.doCreateUser(); });
-		
-        // Enable the user to quit the application
-        setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);
+
+        // Enable the user to quit the application.  GuiStyle places Quit in the same corner on
+        // every page.
+        GuiStyle.styleQuitButton(button_Quit);
         button_Quit.setOnAction((_) -> {ControllerNewAccount.performQuit(); });
 	}
 	
