@@ -12,13 +12,12 @@ import inputRecognizer.LessonValidator;
 /*******
  * <p> Title: LessonTestingAutomation Class. </p>
  *
- * <p> Description: Automated testing for the HW2 lessons learned user stories.  There is one
- * test for each test case in Test Cases.pdf, in the same order and with the same name.
+ * <p> Description: Automated testing for the lessons learned user stories. </p>
  *
  * <p> The lessons already stored are copied into memory first,
  * lessonDB is emptied for the run, and the finally block puts the copied lessons back. </p>
  *
- * @version 1.00		2026-10-05 Initial version
+ * @version 1.5		2026-10-17 Initial version with added comments, remodeled for project
  */
 public class LessonTestingAutomation {
 
@@ -51,6 +50,13 @@ public class LessonTestingAutomation {
 	private static final String CATEGORY = "General";
 
 	
+	/*******
+	 * <p> Runs the automated lesson tests, details the results, and 
+	 * restores the original lessons in the database. </p>
+	 *
+	 * @param args command-line arguments 
+	 * 
+	 */
 	public static void main(String[] args) {
 
 		System.out.println("========================================");
@@ -123,13 +129,20 @@ public class LessonTestingAutomation {
 		}
 	}
 
-	/*-*******************************************************************************************
+	/********************************************************************************************
 
 	The tests.  One method for each test case in Test Cases.pdf.
 
 	*/
 
-	// Test case: Add a lesson learned: valid lesson
+	/**
+	 * <p> Tests adding a lesson with valid title, body, and category values.</p>
+	 *
+	 * <p> Verifies that all three fields are saved correctly and that the lesson persists across sessions.</p>
+	 * 
+	 * @throws SQLException
+	 * 
+	 */
 	private static void testAddValid() throws SQLException {
 		startTest("Add a lesson learned: valid lesson");
 		String error = addLessonChecked(TITLE, BODY, CATEGORY);
@@ -149,7 +162,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add a lesson learned: blank fields
+	/**
+	 * <p> Tests that a lesson cannot be added when its title, body, or category is blank.</p>
+	 *
+	 * <p> Verifies that each invalid input produces an error and that the incomplete lesson is not added to the database.</p>
+	 *
+	 */
 	private static void testAddBlank() {
 		startTest("Add a lesson learned: blank fields");
 		int before = database.getNumberOfLessons();
@@ -161,7 +179,13 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add a lesson learned: too long fields
+	/**
+	 * <p> Tests the maximum allowed lengths for a lesson title, body, and category.</p>
+	 *
+	 * <p> Verifies that values exceeding the limit are rejected without saving a lesson. 
+	 * Values that are exactly at the limits are accepted.</p>
+	 * 
+	 */
 	private static void testAddTooLong() {
 		startTest("Add a lesson learned: too long fields");
 		int before = database.getNumberOfLessons();
@@ -180,7 +204,14 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Locked fields: default flags
+	/**
+	 * <p> Tests the default lock states are assigned to a newly created lesson.</p>
+	 *
+	 * <p> Verifies that the title, body, and category are initially unlocked and that 
+	 * lock settings remain in effect after the database is reopened.</p>
+	 * @throws SQLException
+	 * 
+	 */
 	private static void testLockedDefaultFlags() throws SQLException {
 		startTest("Locked fields: default flags");
 		int id = newLesson();
@@ -195,7 +226,13 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Locked fields: update to a locked field
+	/**
+	 * <p> Tests updating a lesson when one of its fields is locked.</p>
+	 *
+	 * <p> Verifies that trying to change a locked title is rejected and leaves the stored title unchanged.
+	 * Also verifies that an unlocked category on the same lesson can still be updated.</p>
+	 *
+	 */
 	private static void testLockedUpdate() {
 		startTest("Locked fields: update to a locked field");
 		int id = newLesson();
@@ -212,7 +249,13 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Locked fields: delete a locked lesson
+	/**
+	 * <p> Tests whether a lesson can be deleted when one of its fields is locked.</p>
+	 *
+	 * <p> Verifies that attempting to delete a locked lesson reports an error and that 
+	 * the lesson remains in the database.</p>
+	 * 
+	 */
 	private static void testLockedDelete() {
 		startTest("Locked fields: delete a locked lesson");
 		int id = newLesson();
@@ -223,7 +266,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Update or delete a lesson: valid update
+	/**
+	 * <p> Tests updating the title, body, and category of an existing lesson with valid values.</p>
+	 *
+	 * <p> Verifies that each update is accepted and that all three new values are stored correctly.</p>
+	 *
+	 */
 	private static void testValidUpdate() {
 		startTest("Update or delete a lesson: valid update");
 		int id = newLesson();
@@ -246,7 +294,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Update or delete a lesson: invalid update
+	/**
+	 * <p> Tests updating lesson fields with invalid values, including blank values and values longer than the allowed limits.</p>
+	 *
+	 * <p> Verifies that each of the three field is rejected when given invalid values
+	 * and that rejected values do not change the stored ones.</p>
+	 */
 	private static void testInvalidUpdate() {
 		startTest("Update or delete a lesson: invalid update");
 		int id = newLesson();
@@ -262,7 +315,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Update or delete a lesson: delete
+	/**
+	 * <p> Tests deleting an existing lesson whose fields are not locked.</p>
+	 *
+	 * <p> Verifies that deletion is successful and that the lesson is gone from both the database and from the full list.</p>
+	 * @throws SQLException
+	 */
 	private static void testDelete() throws SQLException {
 		startTest("Update or delete a lesson: delete");
 		int id = newLesson();
@@ -274,7 +332,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Update or delete a lesson: lesson does not exist
+	/**
+	 * <p> Tests updating and deleting when using a nonexistent lesson ID.</p>
+	 *
+	 * <p> Verifies that both trying to update or delete a lesson with a nonexistent ID provides 
+	 * a message that the lesson was not found. Also verifies that the number of lessons remains unchanged.</p>
+	 */
 	private static void testLessonDoesNotExist() {
 		startTest("Update or delete a lesson: lesson does not exist");
 		int before = database.getNumberOfLessons();
@@ -286,7 +349,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add experience information: valid experience information
+	/**
+	 * <p> Tests saving valid experience information for an existing lesson.</p>
+	 *
+	 * <p> Verifies that the new description is accepted and stored with the lesson.</p>
+	 *
+	 */
 	private static void testExperienceValid() {
 		startTest("Add experience information: valid experience information");
 		int id = newLesson();
@@ -299,7 +367,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add experience information: blank text
+	/**
+	 * <p> Tests adding experience information when input text is left blank.</p>
+	 *
+	 * <p> Verifies that each invalid entry produces an error and that no experience information is saved.</p>
+	 *
+	 */
 	private static void testExperienceBlankText() {
 		startTest("Add experience information: blank text");
 		int id = newLesson();
@@ -311,7 +384,11 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add experience information: invalid duration
+	/**
+	 * <p> Tests adding experience information with a blank duration and a duration longer than the allowed max.</p>
+	 *
+	 * <p> Verifies that invalid durations are rejected without saving the information.</p>
+	 */
 	private static void testExperienceInvalidDuration() {
 		startTest("Add experience information: invalid duration");
 		int id = newLesson();
@@ -324,7 +401,11 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add experience information: invalid effort
+	/**
+	 * <p> Tests adding experience information with a blank effort value and one that exceeds the allowed max.</p>
+	 *
+	 * <p> Verifies that invalid effort values are rejected without saving the information.</p>
+	 */
 	private static void testExperienceInvalidEffort() {
 		startTest("Add experience information: invalid effort");
 		int id = newLesson();
@@ -341,7 +422,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Add experience information: lesson does not exist
+	/**
+	 * <p> Tests adding experience information to a lesson ID that does not exist.</p>
+	 *
+	 * <p> Verifies that the lesson was not found and does not create a lesson or otherwise change the database.</p>
+	 *
+	 */
 	private static void testExperienceLessonDoesNotExist() {
 		startTest("Add experience information: lesson does not exist");
 		int before = database.getNumberOfLessons();
@@ -352,7 +438,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: See a list of my lessons: full list
+	/**
+	 * <p> Tests retrieving a list when multiple lessons are stored.</p>
+	 *
+	 * <p> Adds three lessons, then verifies that the list contains them all.</p>
+	 *
+	 */
 	private static void testListFull() {
 		startTest("See a list of my lessons: full list");
 		database.clearAllLessons();
@@ -367,7 +458,12 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: See a list of my lessons: empty list
+	/**
+	 * <p> Tests retrieving the lesson list when the database is empty.</p>
+	 *
+	 * <p> Verifies that the returned list is empty and includes a message stating that no lessons were found.</p>
+	 *
+	 */
 	private static void testListEmpty() {
 		startTest("See a list of my lessons: empty list");
 		database.clearAllLessons();
@@ -378,7 +474,11 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Examine a lesson more closely: valid ID
+	/**
+	 * <p> Tests examining a lesson using a valid numeric ID.</p>
+	 *
+	 * <p> Verifies that the ID is accepted and returns the lesson’s title, body, category, fields, and experience information correctly.</p>
+	 */
 	private static void testExamineValid() {
 		startTest("Examine a lesson more closely: valid ID");
 		int id = newLesson();
@@ -399,7 +499,13 @@ public class LessonTestingAutomation {
 		endTest();
 	}
 
-	// Test case: Examine a lesson more closely: invalid ID
+	/**
+	 * <p> Tests examining a lesson with invalid ID input.</p>
+	 *
+	 * <p> Verifies that each invalid input (blank, alphabetical, and an ID that does not 
+	 * point to an existing lesson) each produce an error message.</p>
+	 *
+	 */
 	private static void testExamineInvalid() {
 		startTest("Examine a lesson more closely: invalid ID");
 		expectMessage(examineError(""), "blank");
