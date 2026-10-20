@@ -1660,6 +1660,27 @@ public class Database {
 				rs.getString("expDuration"), rs.getString("expEffort"));
 	}
 	
+	public List<Lesson> getLessonsByContributor(String contributorName) {
+		List<Lesson> results = new ArrayList<>();
+		
+		// SQL Query to extract columns matching the specific user. 
+		// Change "author" to your precise table column name if necessary (e.g., "username").
+		String query = "SELECT * FROM lessonDB WHERE author = ?";
+		
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, contributorName);
+			ResultSet rs = pstmt.executeQuery();
+			
+			// Process each matching row using your existing helper method
+			while (rs.next()) {
+				results.add(lessonFromRow(rs));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		return results;
+	}
 	
 	/*******
 	 * <p> Debugging method</p>
