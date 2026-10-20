@@ -110,7 +110,7 @@ public class LessonTestingAutomation {
 				try {
 					database.clearAllLessons();
 					for (Lesson l : originalLessons) {
-						int id = database.addLesson(l.getTitle(), l.getBody(), l.getCategory());
+						int id = database.addLesson(l.getTitle(), l.getBody(), l.getCategory(), l.getAddedBy());	// keeps who added it
 						if (l.getTitleLocked())
 							database.setLessonFieldLocked(id, Lesson.FIELD_TITLE, true);
 						if (l.getBodyLocked())

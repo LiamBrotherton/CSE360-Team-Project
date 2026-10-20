@@ -31,6 +31,7 @@ import entityClasses.User;
  * @version 2.01		2025-12-17 Minor updates for Spring 2026
  * @version 2.02		2026-10-05 Added the lessonDB table and the lessons learned CRUD methods
  * 							for HW2
+ * @version 2.03		2026-10-20 Added the addedBy column so each lesson records its Contributor
  */
 
 /*
@@ -149,8 +150,14 @@ public class Database {
 	    		+ "expWhatWasDone VARCHAR(2000), "
 	    		+ "expHowItWasDone VARCHAR(2000), "
 	    		+ "expDuration VARCHAR(255), "
-	    		+ "expEffort VARCHAR(255))";
+	    		+ "expEffort VARCHAR(255), "
+	    		+ "addedBy VARCHAR(255))";	// The Contributor who added the lesson
 	    statement.execute(lessonTable);
+
+	    // A database made before the addedBy column existed already has a lessonDB table, so
+	    // CREATE TABLE IF NOT EXISTS above leaves it alone.  This adds the column to such a table
+	    // instead of letting every later query fail on the missing column.
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS addedBy VARCHAR(255)");
 	}
 
 
@@ -1372,12 +1379,37 @@ public class Database {
 	 * 
 	 */
 	public int addLesson(String title, String body, String category) {
-		String insert = "INSERT INTO lessonDB (title, body, category) VALUES (?, ?, ?)";
-		try (PreparedStatement pstmt = connection.prepareStatement(insert, 
+		return addLesson(title, body, category, null);
+	}
+
+
+	/*******
+	 * <p> Method: int addLesson(String title, String body, String category, String addedBy) </p>
+	 *
+	 * <p> Description: Create a new lesson that records the Contributor who added it, with all
+	 * three locked flags unlocked and no experience information.  Recording the author is what
+	 * lets a Contributor see and manage the lessons that Contributor added (the Contributor user
+	 * story, requirements R1 and R2).</p>
+	 *
+	 * @param title specifies the title for the new lesson
+	 *
+	 * @param body specifies the body for the new lesson
+	 *
+	 * @param category specifies the category for the new lesson
+	 *
+	 * @param addedBy specifies the username of the Contributor adding the lesson, or null
+	 *
+	 * @return the ID the database gave the new lesson, or -1 if it could not be saved
+	 *
+	 */
+	public int addLesson(String title, String body, String category, String addedBy) {
+		String insert = "INSERT INTO lessonDB (title, body, category, addedBy) VALUES (?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(insert,
 				Statement.RETURN_GENERATED_KEYS)) {
 			pstmt.setString(1, title);
 			pstmt.setString(2, body);
 			pstmt.setString(3, category);
+			pstmt.setString(4, addedBy);
 			pstmt.executeUpdate();
 			try (ResultSet keys = pstmt.getGeneratedKeys()) {
 				if (keys.next()) return keys.getInt(1);
@@ -1410,6 +1442,33 @@ public class Database {
 	}
 	
 	
+	/*******
+	 * <p> Method: LessonList getLessonsAddedBy(String username) </p>
+	 *
+	 * <p> Description: Read the lessons one Contributor added, in the order they were added.  A
+	 * lesson saved without an author belongs to no one and is never returned.  This is the list
+	 * behind the Contributor's "My lessons" page (requirement R2).</p>
+	 *
+	 * @param username specifies the Contributor whose lessons are wanted
+	 *
+	 * @return a LessonList of that Contributor's lessons, empty if there are none
+	 *
+	 */
+	public LessonList getLessonsAddedBy(String username) {
+		List<Lesson> lessons = new ArrayList<Lesson>();
+		if (username == null) return new LessonList(lessons);
+		String query = "SELECT * FROM lessonDB WHERE addedBy = ? ORDER BY id ASC";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) lessons.add(lessonFromRow(rs));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return new LessonList(lessons);
+	}
+
+
 	/*******
 	 * <p> Method: Lesson getLessonById(int lessonId) </p>
 	 * 
@@ -1657,7 +1716,7 @@ public class Database {
 				rs.getString("category"), rs.getBoolean("titleLocked"), 
 				rs.getBoolean("bodyLocked"), rs.getBoolean("categoryLocked"),
 				rs.getString("expWhatWasDone"), rs.getString("expHowItWasDone"),
-				rs.getString("expDuration"), rs.getString("expEffort"));
+				rs.getString("expDuration"), rs.getString("expEffort"), rs.getString("addedBy"));
 	}
 	
 	

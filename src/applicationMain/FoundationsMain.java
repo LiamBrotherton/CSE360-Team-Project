@@ -88,6 +88,7 @@ public class FoundationsMain extends Application {
 												// Role 0 is the admin role number
 	@Override
 	public void start(Stage theStage) {
+		theStage.setResizable(false);	// Every page is laid out for a fixed 800 by 600 window
 		
 		// Connect to the in-memory database
 		try {

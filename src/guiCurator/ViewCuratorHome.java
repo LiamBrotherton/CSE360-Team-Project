@@ -1,15 +1,13 @@
 package guiCurator;
 
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Line;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import database.Database;
 //import database.Database;
+import guiTools.GuiStyle;
 import entityClasses.User;
 
 
@@ -25,7 +23,15 @@ import entityClasses.User;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-04-20 Initial version
- *  
+ * @version 2.00		2026-10-16 Restyled to the team's user experience design: a full-page
+ * 							gradient with white header text and restyled buttons.  The Curator
+ * 							features are TP3 epics, so this page has no feature buttons yet.  The
+ * 							widgets and their actions are unchanged.
+ * @version 2.10		2026-10-17 Polish: a header bar with the logo, the signed-in user, and the
+ * 							Account Update and Logout buttons; a page title with a line below it;
+ * 							an information card on the shared grid in place of the empty page; and
+ * 							the quiet Quit button in the same corner as on every page.
+ *
  */
 
 public class ViewCuratorHome {
@@ -48,19 +54,12 @@ public class ViewCuratorHome {
 	// and a button to allow this user to update the account settings
 	protected static Label label_PageTitle = new Label();
 	protected static Label label_UserDetails = new Label();
+	private static Label label_Subtitle = new Label("Your curator tools will appear here.");
 	protected static Button button_UpdateThisUser = new Button("Account Update");
-		
-	// This is a separator and it is used to partition the GUI for various tasks
-	protected static Line line_Separator1 = new Line(20, 95, width-20, 95);
 
 	// GUI ARea 2: This is a stub, so there are no widgets here.  For an actual role page, this are
 	// would contain the widgets needed for the user to play the assigned role.
-	
-	
-	
-	// This is a separator and it is used to partition the GUI for various tasks
-	protected static Line line_Separator4 = new Line(20, 525, width-20,525);
-	
+
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application and for
 	// logging out.
 	protected static Button button_Logout = new Button("Logout");
@@ -123,12 +122,13 @@ public class ViewCuratorHome {
 		theDatabase.getUserAccountDetails(user.getUserName());
 		applicationMain.FoundationsMain.activeHomePage = theRole;
 		
-		label_UserDetails.setText("User: " + theUser.getUserName());// Set the username
+		label_UserDetails.setText("Signed in as " + theUser.getUserName());// Set the username
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundations: Curator Home Page");
 		theStage.setScene(theCuratorHomeScene);						// Set this page onto the stage
 		theStage.show();											// Display it to the user
+		GuiStyle.startUnfocused(theRootPane);				// No header button looks pressed on arrival
 	}
 	
 	/**********
@@ -152,81 +152,36 @@ public class ViewCuratorHome {
 		
 		// Populate the window with the title and other common widgets and set their static state
 		
-		// GUI Area 1
-		label_PageTitle.setText("Curator Home Page");
-		setupLabelUI(label_PageTitle, "Arial", 28, width, Pos.CENTER, 0, 5);
+		// The page sits on a full-page gradient, so the header text is white
+		GuiStyle.applyBackground(theRootPane);
 
-		label_UserDetails.setText("User: " + theUser.getUserName());
-		setupLabelUI(label_UserDetails, "Arial", 20, width, Pos.BASELINE_LEFT, 20, 55);
-		
-		setupButtonUI(button_UpdateThisUser, "Dialog", 18, 170, Pos.CENTER, 610, 45);
+		// GUI Area 1: the header bar across the top, then the page title.  GuiStyle places these
+		// in the same spots on every home page.
+		label_UserDetails.setText("Signed in as " + theUser.getUserName());
+		GuiStyle.placeHomeHeader(label_UserDetails, button_UpdateThisUser, button_Logout);
 		button_UpdateThisUser.setOnAction((_) -> {ControllerCuratorHome.performUpdate(); });
-		
-		// GUI Area 2
-		
-			// This is a stub, so this area is empty
-		
-		
-		// GUI Area 3
-        setupButtonUI(button_Logout, "Dialog", 18, 250, Pos.CENTER, 20, 540);
-        button_Logout.setOnAction((_) -> {ControllerCuratorHome.performLogout(); });
-        
-        setupButtonUI(button_Quit, "Dialog", 18, 250, Pos.CENTER, 300, 540);
+		button_Logout.setOnAction((_) -> {ControllerCuratorHome.performLogout(); });
+
+		label_PageTitle.setText("Curator Home");
+		GuiStyle.placeHomeTitle(label_PageTitle, label_Subtitle);
+
+		// GUI Area 2: the Curator features are TP3 epics, so for now one information card on
+		// the shared grid says what will appear here.
+
+		// GUI Area 3: Quit, which GuiStyle places in the same corner on every page
+		GuiStyle.styleQuitButton(button_Quit);
         button_Quit.setOnAction((_) -> {ControllerCuratorHome.performQuit(); });
 
 		// This is the end of the GUI initialization code
-		
-		// Place all of the widget items into the Root Pane's list of children
+
+		// Place all of the widget items into the Root Pane's list of children, the header bar first
+		// so it is drawn behind the widgets that sit on it
         theRootPane.getChildren().addAll(
-			label_PageTitle, label_UserDetails, button_UpdateThisUser, line_Separator1,
-	        line_Separator4, button_Logout, button_Quit);
-	}
-	
-	
-	/*-********************************************************************************************
-
-	Helper methods to reduce code length
-
-	 */
-	
-	/**********
-	 * Private local method to initialize the standard fields for a label
-	 * 
-	 * @param l		The Label object to be initialized
-	 * @param ff	The font to be used
-	 * @param f		The size of the font to be used
-	 * @param w		The width of the Button
-	 * @param p		The alignment (e.g. left, centered, or right)
-	 * @param x		The location from the left edge (x axis)
-	 * @param y		The location from the top (y axis)
-	 */
-	private static void setupLabelUI(Label l, String ff, double f, double w, Pos p, double x, 
-			double y){
-		l.setFont(Font.font(ff, f));
-		l.setMinWidth(w);
-		l.setAlignment(p);
-		l.setLayoutX(x);
-		l.setLayoutY(y);		
-	}
-	
-	
-	/**********
-	 * Private local method to initialize the standard fields for a button
-	 * 
-	 * @param b		The Button object to be initialized
-	 * @param ff	The font to be used
-	 * @param f		The size of the font to be used
-	 * @param w		The width of the Button
-	 * @param p		The alignment (e.g. left, centered, or right)
-	 * @param x		The location from the left edge (x axis)
-	 * @param y		The location from the top (y axis)
-	 */
-	private static void setupButtonUI(Button b, String ff, double f, double w, Pos p, double x, 
-			double y){
-		b.setFont(Font.font(ff, f));
-		b.setMinWidth(w);
-		b.setAlignment(p);
-		b.setLayoutX(x);
-		b.setLayoutY(y);		
+			GuiStyle.createHeaderBar(), GuiStyle.createLogo(24, 20, true),
+			label_UserDetails, button_UpdateThisUser, button_Logout,
+			label_PageTitle, label_Subtitle,
+			GuiStyle.createFeatureCard(GuiStyle.featureCardX(0), GuiStyle.FEATURE_ROW_Y, "Curator tools",
+					"Reviewing, refining, and locking lessons will appear here in the next phase.", null),
+			button_Quit);
 	}
 }

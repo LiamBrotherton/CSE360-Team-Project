@@ -18,7 +18,10 @@ package guiViewer;
  * @author Lynn Robert Carter
  * 
  * @version 1.00		2025-08-17 Initial version
- * @version 1.01		2025-09-16 Update Javadoc documentation *  
+ * @version 1.01		2025-09-16 Update Javadoc documentation *
+ * @version 2.00		2026-10-16 Added the performAllLessons and performSearchLessons actions
+ * 							for the two TP2 feature buttons.  Each opens the Coming Soon page until
+ * 							its feature is built.
  */
 
 public class ControllerViewerHome {
@@ -49,6 +52,30 @@ public class ControllerViewerHome {
 	protected static void performUpdate () {
 		guiUserUpdate.ViewUserUpdate.displayUserUpdate(ViewViewerHome.theStage, ViewViewerHome.theUser);
 	}	
+
+	/**********
+	 * <p> Method: performAllLessons() </p>
+	 *
+	 * <p> Description: This method directs the user to the Coming Soon page for the list of all
+	 * the lessons.  It is a placeholder until the All Lessons page has been built. </p>
+	 *
+	 */
+	protected static void performAllLessons () {
+		guiComingSoon.ViewComingSoon.displayComingSoon(ViewViewerHome.theStage,
+				ViewViewerHome.theUser, "All lessons");
+	}
+
+	/**********
+	 * <p> Method: performSearchLessons() </p>
+	 *
+	 * <p> Description: This method directs the user to the Coming Soon page for searching the
+	 * lessons by keyword.  It is a placeholder until the Search Lessons page has been built. </p>
+	 *
+	 */
+	protected static void performSearchLessons () {
+		guiComingSoon.ViewComingSoon.displayComingSoon(ViewViewerHome.theStage,
+				ViewViewerHome.theUser, "Search lessons");
+	}
 
 	/**********
 	 * <p> Method: performLogout() </p>
