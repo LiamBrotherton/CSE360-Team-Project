@@ -22,6 +22,8 @@ package guiContributor;
  * @version 2.00		2026-10-16 Added the performAddLesson, performMyLessons, and
  * 							performAddExperience actions for the three TP2 feature buttons.  Each
  * 							opens the Coming Soon page until its feature is built.
+ * @version 2.10		2026-10-20 Add a lesson and My lessons now open the Add a Lesson and My
+ * 							Lessons pages.  Add experience info still opens the Coming Soon page.
  */
 
 public class ControllerContributorHome {
@@ -56,26 +58,25 @@ public class ControllerContributorHome {
 	/**********
 	 * <p> Method: performAddLesson() </p>
 	 *
-	 * <p> Description: This method directs the user to the Coming Soon page for adding a lesson.
-	 * It is a placeholder until the Add a Lesson page has been built. </p>
+	 * <p> Description: This method directs the user to the Add a Lesson page, where a Contributor
+	 * adds a new lesson with its core information. </p>
 	 *
 	 */
 	protected static void performAddLesson () {
-		guiComingSoon.ViewComingSoon.displayComingSoon(ViewContributorHome.theStage,
-				ViewContributorHome.theUser, "Add a lesson");
+		guiAddLesson.ViewAddLesson.displayAddLesson(ViewContributorHome.theStage,
+				ViewContributorHome.theUser);
 	}
 
 	/**********
 	 * <p> Method: performMyLessons() </p>
 	 *
-	 * <p> Description: This method directs the user to the Coming Soon page for the list of the
-	 * lessons this Contributor has added.  It is a placeholder until the My Lessons page has been
-	 * built. </p>
+	 * <p> Description: This method directs the user to the My Lessons page, which lists the
+	 * lessons this Contributor has added. </p>
 	 *
 	 */
 	protected static void performMyLessons () {
-		guiComingSoon.ViewComingSoon.displayComingSoon(ViewContributorHome.theStage,
-				ViewContributorHome.theUser, "My lessons");
+		guiMyLessons.ViewMyLessons.displayMyLessons(ViewContributorHome.theStage,
+				ViewContributorHome.theUser);
 	}
 
 	/**********

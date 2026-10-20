@@ -7,8 +7,14 @@ package entityClasses;
  *  contains the core information (title, body, category), a locked flag for each core field, 
  *  and the optional experience information (what was done, how it was done, duration, and 
  *  effort). </p>
- * 
- */ 
+ *
+ * <p> It also records who added the lesson (addedBy).  The Contributor user story says a
+ *  Contributor can see and manage the lessons that Contributor added, and only those, so a
+ *  lesson has to remember its author. </p>
+ *
+ * @version 1.10		2026-10-20 Added the addedBy attribute and a constructor that sets it
+ *
+ */
 
 public class Lesson {
 	
@@ -40,8 +46,14 @@ public class Lesson {
     private String howItWasDone;
     private String duration;
     private String effort;
-    
-    
+
+    // The username of the Contributor who added the lesson.  Source: the Contributor user story
+    // ("once a lesson has been added ... I can see and manage it"), which needs each lesson tied
+    // to its author.  It is null for a lesson saved before this attribute existed, and such a
+    // lesson belongs to no Contributor's list.
+    private String addedBy;
+
+
     /*****
      * <p> Method: Lesson(int id, String title, String body, String category, 
      * 		boolean titleLocked, boolean bodyLocked, boolean categoryLocked, 
@@ -72,10 +84,54 @@ public class Lesson {
      * @param effort specifies the experience information of the effort used, or null
      * 
      */
-    // Constructor to initialize a new Lesson object with all of its stored attributes.
+    // Constructor kept for the code that existed before addedBy; such a lesson has no author.
     public Lesson(int id, String title, String body, String category, boolean titleLocked,
     		boolean bodyLocked, boolean categoryLocked, String whatWasDone, String howItWasDone,
     		String duration, String effort) {
+    	this(id, title, body, category, titleLocked, bodyLocked, categoryLocked, whatWasDone,
+    			howItWasDone, duration, effort, null);
+    }
+
+
+    /*****
+     * <p> Method: Lesson(int id, String title, String body, String category,
+     * 		boolean titleLocked, boolean bodyLocked, boolean categoryLocked,
+     * 		String whatWasDone, String howItWasDone, String duration, String effort,
+     * 		String addedBy) </p>
+     *
+     * <p> Description: This constructor is used to establish lesson entity objects, including
+     * who added the lesson. </p>
+     *
+     * @param id specifies the database-assigned identifier for this lesson
+     *
+     * @param title specifies the title for this lesson
+     *
+     * @param body specifies the body for this lesson
+     *
+     * @param category specifies the category for this lesson
+     *
+     * @param titleLocked specifies if the title is locked (TRUE or FALSE)
+     *
+     * @param bodyLocked specifies if the body is locked (TRUE or FALSE)
+     *
+     * @param categoryLocked specifies if the category is locked (TRUE or FALSE)
+     *
+     * @param whatWasDone specifies the experience information of what was done, or null
+     *
+     * @param howItWasDone specifies the experience information of how it was done, or null
+     *
+     * @param duration specifies the experience information of how long it took, or null
+     *
+     * @param effort specifies the experience information of the effort used, or null
+     *
+     * @param addedBy specifies the username of the Contributor who added the lesson, or null
+     *
+     */
+    // Constructor to initialize a new Lesson object with all of its stored attributes.
+    public Lesson(int id, String title, String body, String category, boolean titleLocked,
+    		boolean bodyLocked, boolean categoryLocked, String whatWasDone, String howItWasDone,
+    		String duration, String effort, String addedBy) {
+        this.addedBy = addedBy;
         this.id = id;
         this.title = title;
         this.body = body;
@@ -245,6 +301,19 @@ public class Lesson {
      */
     // Gets the current value of the Effort.
     public String getEffort() { return effort; }
+
+
+    /*****
+     * <p> Method: String getAddedBy() </p>
+     *
+     * <p> Description: This getter returns the username of the Contributor who added this
+     * lesson.  The Contributor pages use it to show a Contributor only their own lessons. </p>
+     *
+     * @return the author's username, or null for a lesson saved before authors were recorded
+     *
+     */
+    // Gets the username of the Contributor who added this lesson.
+    public String getAddedBy() { return addedBy; }
     
     
     /*****

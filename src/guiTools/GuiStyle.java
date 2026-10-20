@@ -5,6 +5,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
@@ -52,6 +55,8 @@ import javafx.scene.text.FontWeight;
  * @version 1.10		2026-10-17 Polish: one font family and a type scale, consistent control
  * 							heights, the home page header bar, feature cards, the quiet Quit button,
  * 							the logo for dark backgrounds, and the Coming Soon icon.
+ * @version 1.20		2026-10-20 Added styleTextArea, styleList, and styleErrorLabel for the
+ * 							Contributor's My lessons, Add a lesson, and Lesson details pages.
  */
 
 public class GuiStyle {
@@ -82,6 +87,9 @@ public class GuiStyle {
 
 	/** The color of the small labels that name a field, such as "Username". */
 	public static final String COLOR_LABEL = "#344054";
+
+	/** The color of a message saying why something could not be done, such as a refused save. */
+	public static final String COLOR_ERROR = "#b42318";
 
 	/*-********************************************************************************************
 
@@ -773,6 +781,67 @@ public class GuiStyle {
 		bindFocusRing(c, "-fx-font-family: '" + family() + "'; -fx-font-size: 15px; "
 				+ "-fx-background-color: white; -fx-background-insets: 0; "
 				+ "-fx-border-color: #d0d5dd; -fx-border-radius: 8; -fx-background-radius: 8;");
+	}
+
+	/**********
+	 * <p> Method: styleTextArea(TextArea t) </p>
+	 *
+	 * <p> Description: Gives a text area the same outline, font, and focus ring as a text field.
+	 * Its height is left to the page, since a text area is as tall as the text it is meant to
+	 * hold.  Long lines wrap rather than scroll sideways. </p>
+	 *
+	 * @param t		The TextArea object to be styled
+	 */
+	public static void styleTextArea(TextArea t) {
+		t.setFont(fontBody());
+		t.setWrapText(true);
+		bindFocusRing(t, "-fx-background-color: white; -fx-background-insets: 0; "
+				+ "-fx-control-inner-background: white; -fx-border-color: #d0d5dd; "
+				+ "-fx-border-radius: 8; -fx-background-radius: 8; -fx-text-fill: " + COLOR_TEXT + "; "
+				+ "-fx-prompt-text-fill: #98a2b3; -fx-focus-color: transparent; "
+				+ "-fx-faint-focus-color: transparent; -fx-padding: 4;");
+	}
+
+	/**********
+	 * <p> Method: styleList(ListView l) </p>
+	 *
+	 * <p> Description: Gives a list the same outline and focus ring as a text field and draws its
+	 * rows in the body font.  Unlike a drop-down, the font is not put in the style string: a list
+	 * whose style carries a font makes JavaFX print style warnings when the window moves to
+	 * another page.  Instead each row is made with the body font set on it directly. </p>
+	 *
+	 * @param l		The ListView object to be styled
+	 */
+	public static void styleList(ListView<String> l) {
+		l.setCellFactory((_) -> {
+			ListCell<String> row = new ListCell<>() {
+				@Override
+				protected void updateItem(String item, boolean empty) {
+					super.updateItem(item, empty);
+					setText(empty ? null : item);
+				}
+			};
+			row.setFont(fontBody());
+			return row;
+		});
+		bindFocusRing(l, "-fx-background-color: white; -fx-background-insets: 0; "
+				+ "-fx-border-color: #d0d5dd; -fx-border-radius: 8; -fx-background-radius: 8; "
+				+ "-fx-padding: 4;");
+	}
+
+	/**********
+	 * <p> Method: styleErrorLabel(Label l) </p>
+	 *
+	 * <p> Description: Makes a label the red text that tells the user why something could not be
+	 * done, such as a value that broke a rule.  The text wraps, so a long message stays on the
+	 * card. </p>
+	 *
+	 * @param l		The Label object to be styled
+	 */
+	public static void styleErrorLabel(Label l) {
+		l.setFont(fontBody());
+		l.setTextFill(Color.web(COLOR_ERROR));
+		l.setWrapText(true);
 	}
 
 	/**********
