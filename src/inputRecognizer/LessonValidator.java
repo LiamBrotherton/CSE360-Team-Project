@@ -1,6 +1,6 @@
 package inputRecognizer;
 
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 
 /*******
  * <p> Title: LessonValidator Class </p>
@@ -164,25 +164,25 @@ public class LessonValidator {
      */
     // Blank is reported first, then non-numeric, then out of range.
     public static String checkLessonIdText(String idText) {
-    	if (idText == null || idText.trim().isEmpty()) return "Lesson ID cannot be blank.";
+    	if (idText == null || idText.trim().isEmpty()) return "LessonsLearned ID cannot be blank.";
     	int id;
     	try {
     		id = Integer.parseInt(idText.trim());
     	} catch (NumberFormatException e) {
-    		return "Lesson ID must be a whole number; \"" + idText.trim() + "\" is not.";
+    		return "LessonsLearned ID must be a whole number; \"" + idText.trim() + "\" is not.";
     	}
-    	if (id < 1) return "Lesson ID must be 1 or more.";
+    	if (id < 1) return "LessonsLearned ID must be 1 or more.";
     	return "";
     }
 
     
     /*****
-     * <p> Method: String checkLessonFound(Lesson lesson, int lessonId) </p>
+     * <p> Method: String checkLessonFound(LessonsLearned lesson, int lessonId) </p>
      * 
      * <p> Description: This method checks that a lesson was found.  The caller passes the 
      * result of reading the database (null if there was no such lesson). </p>
      * 
-     * @param lesson specifies the lesson read from the database, or null
+     * @param lessonsLearned specifies the lesson read from the database, or null
      * 
      * @param lessonId specifies the ID that was looked up, used in the message
      * 
@@ -190,35 +190,35 @@ public class LessonValidator {
      * 
      */
     // The same wording is used for update, delete, add experience, and examine.
-    public static String checkLessonFound(Lesson lesson, int lessonId) {
-    	if (lesson == null) return "Lesson " + lessonId + " was not found.";
+    public static String checkLessonFound(LessonsLearned lessonsLearned, int lessonId) {
+    	if (lessonsLearned == null) return "LessonsLearned " + lessonId + " was not found.";
     	return "";
     }
 
     
     /*****
-     * <p> Method: String checkFieldNotLocked(Lesson lesson, String field) </p>
+     * <p> Method: String checkFieldNotLocked(LessonsLearned lesson, String field) </p>
      * 
      * <p> Description: This method checks that a core field may be updated.  A locked field 
      * cannot be altered. </p>
      * 
-     * @param lesson specifies the lesson read from the database (not null)
+     * @param lessonsLearned specifies the lesson read from the database (not null)
      * 
-     * @param field specifies Lesson.FIELD_TITLE, Lesson.FIELD_BODY, or Lesson.FIELD_CATEGORY
+     * @param field specifies LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_BODY, or LessonsLearned.FIELD_CATEGORY
      * 
      * @return an empty String if the field is not locked, else the error message naming it
      * 
      */
     // An unknown field name is reported rather than treated as unlocked.
-    public static String checkFieldNotLocked(Lesson lesson, String field) {
+    public static String checkFieldNotLocked(LessonsLearned lessonsLearned, String field) {
     	boolean locked;
-    	if (Lesson.FIELD_TITLE.equals(field)) locked = lesson.getTitleLocked();
-    	else if (Lesson.FIELD_BODY.equals(field)) locked = lesson.getBodyLocked();
-    	else if (Lesson.FIELD_CATEGORY.equals(field)) locked = lesson.getCategoryLocked();
+    	if (LessonsLearned.FIELD_TITLE.equals(field)) locked = lessonsLearned.getTitleLocked();
+    	else if (LessonsLearned.FIELD_BODY.equals(field)) locked = lessonsLearned.getBodyLocked();
+    	else if (LessonsLearned.FIELD_CATEGORY.equals(field)) locked = lessonsLearned.getCategoryLocked();
     	else return "\"" + field + "\" is not a lockable field.  Use title, body, or category.";
     	
     	if (locked) {
-    		return "The " + field + " of lesson " + lesson.getId() 
+    		return "The " + field + " of lesson " + lessonsLearned.getId() 
     				+ " is locked and cannot be changed.";
     	}
     	return "";
@@ -226,26 +226,26 @@ public class LessonValidator {
 
     
     /*****
-     * <p> Method: String checkCanDelete(Lesson lesson) </p>
+     * <p> Method: String checkCanDelete(LessonsLearned lesson) </p>
      * 
      * <p> Description: This method checks that a lesson may be deleted.  A lesson with any 
      * locked field cannot be deleted. </p>
      * 
-     * @param lesson specifies the lesson read from the database (not null)
+     * @param lessonsLearned specifies the lesson read from the database (not null)
      * 
      * @return an empty String if the lesson may be deleted, else the error message listing 
      * the locked fields
      * 
      */
     // The message lists which fields are locked so the person knows who to ask.
-    public static String checkCanDelete(Lesson lesson) {
-    	if (!lesson.hasLockedField()) return "";
+    public static String checkCanDelete(LessonsLearned lessonsLearned) {
+    	if (!lessonsLearned.hasLockedField()) return "";
     	StringBuilder locked = new StringBuilder();
-    	if (lesson.getTitleLocked()) locked.append("title, ");
-    	if (lesson.getBodyLocked()) locked.append("body, ");
-    	if (lesson.getCategoryLocked()) locked.append("category, ");
+    	if (lessonsLearned.getTitleLocked()) locked.append("title, ");
+    	if (lessonsLearned.getBodyLocked()) locked.append("body, ");
+    	if (lessonsLearned.getCategoryLocked()) locked.append("category, ");
     	locked.setLength(locked.length() - 2);	// remove the final ", "
-    	return "Lesson " + lesson.getId() + " is locked (" + locked + ") and cannot be deleted.";
+    	return "LessonsLearned " + lessonsLearned.getId() + " is locked (" + locked + ") and cannot be deleted.";
     }
 
     

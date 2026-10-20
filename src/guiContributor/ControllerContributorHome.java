@@ -22,7 +22,7 @@ package guiContributor;
  * @version 2.00		2026-10-16 Added the performAddLesson, performMyLessons, and
  * 							performAddExperience actions for the three TP2 feature buttons.  Each
  * 							opens the Coming Soon page until its feature is built.
- * @version 2.10		2026-10-20 Add a lesson and My lessons now open the Add a Lesson and My
+ * @version 2.10		2026-10-20 Add a lesson and My lessons now open the Add a LessonsLearned and My
  * 							Lessons pages.  Add experience info still opens the Coming Soon page.
  */
 
@@ -58,7 +58,7 @@ public class ControllerContributorHome {
 	/**********
 	 * <p> Method: performAddLesson() </p>
 	 *
-	 * <p> Description: This method directs the user to the Add a Lesson page, where a Contributor
+	 * <p> Description: This method directs the user to the Add a LessonsLearned page, where a Contributor
 	 * adds a new lesson with its core information. </p>
 	 *
 	 */

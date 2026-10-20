@@ -6,7 +6,7 @@ import inputRecognizer.LessonValidator;
 /*******
  * <p> Title: ModelAddLesson Class. </p>
  *
- * <p> Description: The Add a Lesson Page Model.  It holds the one rule this page has: a
+ * <p> Description: The Add a LessonsLearned Page Model.  It holds the one rule this page has: a
  * Contributor's new lesson is checked, and only stored when all of its core information is
  * acceptable, and it is stored with that Contributor recorded as its author.
  *

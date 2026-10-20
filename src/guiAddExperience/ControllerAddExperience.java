@@ -3,7 +3,7 @@ package guiAddExperience;
 import java.util.Optional;
 
 import database.Database;
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
@@ -45,7 +45,7 @@ public class ControllerAddExperience {
 
         Database db = applicationMain.FoundationsMain.database;
         int id = Integer.parseInt(idText.trim());
-        Lesson lesson = db.getLessonById(id);
+        LessonsLearned lesson = db.getLessonById(id);
         if (lesson == null) {
             ViewAddExperience.label_Status.setText("Lesson " + id + " was not found.");
             return;

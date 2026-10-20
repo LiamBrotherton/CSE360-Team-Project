@@ -3,13 +3,13 @@ package guiLessonDetail;
 import java.util.Optional;
 
 import javafx.scene.control.ButtonType;
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 import inputRecognizer.LessonValidator;
 
 /*******
  * <p> Title: ControllerLessonDetail Class. </p>
  *
- * <p> Description: The Java/FX-based Lesson Details Page controller.  This class provides the
+ * <p> Description: The Java/FX-based LessonsLearned Details Page controller.  This class provides the
  * controller actions for the page's buttons: Edit on each unlocked field, Delete lesson, and Back
  * to my lessons.
  *
@@ -60,21 +60,21 @@ public class ControllerLessonDetail {
 	 * ModelLessonDetail.updateField, which checks everything again and saves it, and the page is
 	 * shown again with the new value or with the reason it was refused. </p>
 	 *
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_CATEGORY, or Lesson.FIELD_BODY
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_CATEGORY, or LessonsLearned.FIELD_BODY
 	 */
 	protected static void performEdit(String field) {
 		String username = ViewLessonDetail.theUser.getUserName();
 		int id = ViewLessonDetail.theLessonId;
 
 		// R6 and R7: act on the lesson as it is now
-		Lesson lesson = ModelLessonDetail.lessonFor(ViewLessonDetail.theDatabase, username, id);
-		if (lesson == null) {
+		LessonsLearned lessonsLearned = ModelLessonDetail.lessonFor(ViewLessonDetail.theDatabase, username, id);
+		if (lessonsLearned == null) {
 			backToMyLessons(ModelLessonDetail.NOT_AVAILABLE);
 			return;
 		}
 
 		// R4: a field locked since the page was shown cannot be edited
-		String problem = LessonValidator.checkFieldNotLocked(lesson, field);
+		String problem = LessonValidator.checkFieldNotLocked(lessonsLearned, field);
 		if (!problem.isEmpty()) {
 			showAgain(problem);
 			return;
@@ -82,7 +82,7 @@ public class ControllerLessonDetail {
 
 		// R4: ask for the new value, starting from the current one.  A value that breaks a rule
 		// is offered again with the reason, so the Contributor can fix it instead of retyping it.
-		Optional<String> value = ViewLessonDetail.askForValue(field, currentValue(lesson, field), "");
+		Optional<String> value = ViewLessonDetail.askForValue(field, currentValue(lessonsLearned, field), "");
 		if (value.isEmpty()) return;
 		problem = ModelLessonDetail.checkValue(field, value.get());
 		while (!problem.isEmpty()) {
@@ -112,14 +112,14 @@ public class ControllerLessonDetail {
 		int id = ViewLessonDetail.theLessonId;
 
 		// R6 and R7: act on the lesson as it is now
-		Lesson lesson = ModelLessonDetail.lessonFor(ViewLessonDetail.theDatabase, username, id);
-		if (lesson == null) {
+		LessonsLearned lessonsLearned = ModelLessonDetail.lessonFor(ViewLessonDetail.theDatabase, username, id);
+		if (lessonsLearned == null) {
 			backToMyLessons(ModelLessonDetail.NOT_AVAILABLE);
 			return;
 		}
 
 		// R5: a lesson with a locked field cannot be deleted, so there is nothing to confirm
-		String problem = LessonValidator.checkCanDelete(lesson);
+		String problem = LessonValidator.checkCanDelete(lessonsLearned);
 		if (!problem.isEmpty()) {
 			ViewLessonDetail.label_Message.setText(problem);
 			return;
@@ -174,14 +174,14 @@ public class ControllerLessonDetail {
 	/**********
 	 * Private local method that gives a field's current value.
 	 *
-	 * @param lesson	The lesson
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_CATEGORY, or Lesson.FIELD_BODY
+	 * @param lessonsLearned	The lesson
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_CATEGORY, or LessonsLearned.FIELD_BODY
 	 *
 	 * @return the value of that field
 	 */
-	private static String currentValue(Lesson lesson, String field) {
-		if (Lesson.FIELD_TITLE.equals(field)) return lesson.getTitle();
-		if (Lesson.FIELD_CATEGORY.equals(field)) return lesson.getCategory();
-		return lesson.getBody();
+	private static String currentValue(LessonsLearned lessonsLearned, String field) {
+		if (LessonsLearned.FIELD_TITLE.equals(field)) return lessonsLearned.getTitle();
+		if (LessonsLearned.FIELD_CATEGORY.equals(field)) return lessonsLearned.getCategory();
+		return lessonsLearned.getBody();
 	}
 }

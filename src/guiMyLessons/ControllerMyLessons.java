@@ -42,8 +42,8 @@ public class ControllerMyLessons {
 	/**********
 	 * <p> Method: performOpen() </p>
 	 *
-	 * <p> Description: This method opens the Lesson Details page for the lesson chosen in the list
-	 * (R3).  With no lesson chosen it says so and stays on this page.  The Lesson Details page
+	 * <p> Description: This method opens the LessonsLearned Details page for the lesson chosen in the list
+	 * (R3).  With no lesson chosen it says so and stays on this page.  The LessonsLearned Details page
 	 * checks again that the lesson still exists and is this Contributor's, so a lesson deleted
 	 * by another role since the list was shown is handled there (R6). </p>
 	 *
@@ -61,7 +61,7 @@ public class ControllerMyLessons {
 	/**********
 	 * <p> Method: performAddLesson() </p>
 	 *
-	 * <p> Description: This method opens the Add a Lesson page (R1). </p>
+	 * <p> Description: This method opens the Add a LessonsLearned page (R1). </p>
 	 *
 	 */
 	protected static void performAddLesson() {

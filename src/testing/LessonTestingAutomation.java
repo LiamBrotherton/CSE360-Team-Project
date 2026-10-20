@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import database.Database;
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import inputRecognizer.LessonValidator;
 
 /*******
@@ -33,7 +33,7 @@ public class LessonTestingAutomation {
 	private static StringBuilder problems = new StringBuilder();
 
 	// The lessons that were in lessonDB before this run, so they can be put back afterward
-	private static List<Lesson> originalLessons = new ArrayList<Lesson>();
+	private static List<LessonsLearned> originalLessons = new ArrayList<LessonsLearned>();
 
 	// The ID that addLessonChecked most recently saved, or -1 if it saved nothing
 	private static int lastAddedId = -1;
@@ -68,7 +68,7 @@ public class LessonTestingAutomation {
 			database.connectToDatabase();
 
 			// Copy out the lessons already stored, then empty lessonDB for the run
-			originalLessons = new ArrayList<Lesson>(database.getAllLessons().getLessons());
+			originalLessons = new ArrayList<LessonsLearned>(database.getAllLessons().getLessons());
 			System.out.println("Lessons already in the database (restored afterward): "
 					+ originalLessons.size());
 			database.clearAllLessons();
@@ -109,14 +109,14 @@ public class LessonTestingAutomation {
 			if (database != null) {
 				try {
 					database.clearAllLessons();
-					for (Lesson l : originalLessons) {
+					for (LessonsLearned l : originalLessons) {
 						int id = database.addLesson(l.getTitle(), l.getBody(), l.getCategory(), l.getAddedBy());	// keeps who added it
 						if (l.getTitleLocked())
-							database.setLessonFieldLocked(id, Lesson.FIELD_TITLE, true);
+							database.setLessonFieldLocked(id, LessonsLearned.FIELD_TITLE, true);
 						if (l.getBodyLocked())
-							database.setLessonFieldLocked(id, Lesson.FIELD_BODY, true);
+							database.setLessonFieldLocked(id, LessonsLearned.FIELD_BODY, true);
 						if (l.getCategoryLocked())
-							database.setLessonFieldLocked(id, Lesson.FIELD_CATEGORY, true);
+							database.setLessonFieldLocked(id, LessonsLearned.FIELD_CATEGORY, true);
 						if (l.hasExperienceInformation())
 							database.addExperienceInformation(id, l.getWhatWasDone(),
 									l.getHowItWasDone(), l.getDuration(), l.getEffort());
@@ -149,15 +149,15 @@ public class LessonTestingAutomation {
 		expect(error.isEmpty(), "a valid lesson is accepted");
 		int id = lastAddedId;
 
-		Lesson read = database.getLessonById(id);
-		expect(fieldOf(read, Lesson.FIELD_TITLE).equals(TITLE), "title reads back the same");
-		expect(fieldOf(read, Lesson.FIELD_BODY).equals(BODY), "body reads back the same");
-		expect(fieldOf(read, Lesson.FIELD_CATEGORY).equals(CATEGORY),
+		LessonsLearned read = database.getLessonById(id);
+		expect(fieldOf(read, LessonsLearned.FIELD_TITLE).equals(TITLE), "title reads back the same");
+		expect(fieldOf(read, LessonsLearned.FIELD_BODY).equals(BODY), "body reads back the same");
+		expect(fieldOf(read, LessonsLearned.FIELD_CATEGORY).equals(CATEGORY),
 				"category reads back the same");
 
 		reopenDatabase();
 		read = database.getLessonById(id);
-		expect(fieldOf(read, Lesson.FIELD_TITLE).equals(TITLE),
+		expect(fieldOf(read, LessonsLearned.FIELD_TITLE).equals(TITLE),
 				"the lesson is still there after the database is closed and reopened");
 		endTest();
 	}
@@ -218,7 +218,7 @@ public class LessonTestingAutomation {
 		expect(lockedText(database.getLessonById(id)).equals(
 				"title=false body=false category=false"), "a new lesson has every field unlocked");
 
-		database.setLessonFieldLocked(id, Lesson.FIELD_BODY, true);
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_BODY, true);
 		reopenDatabase();
 		expect(lockedText(database.getLessonById(id)).equals(
 				"title=false body=true category=false"),
@@ -236,15 +236,15 @@ public class LessonTestingAutomation {
 	private static void testLockedUpdate() {
 		startTest("Locked fields: update to a locked field");
 		int id = newLesson();
-		database.setLessonFieldLocked(id, Lesson.FIELD_TITLE, true);
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_TITLE, true);
 
-		expectMessage(updateChecked(id, Lesson.FIELD_TITLE, "A different title"), "title");
-		expect(fieldOf(database.getLessonById(id), Lesson.FIELD_TITLE).equals(TITLE),
+		expectMessage(updateChecked(id, LessonsLearned.FIELD_TITLE, "A different title"), "title");
+		expect(fieldOf(database.getLessonById(id), LessonsLearned.FIELD_TITLE).equals(TITLE),
 				"the stored title is unchanged");
 
-		expect(updateChecked(id, Lesson.FIELD_CATEGORY, "Exam").isEmpty(),
+		expect(updateChecked(id, LessonsLearned.FIELD_CATEGORY, "Exam").isEmpty(),
 				"an unlocked field on the same lesson can be updated");
-		expect(fieldOf(database.getLessonById(id), Lesson.FIELD_CATEGORY).equals("Exam"),
+		expect(fieldOf(database.getLessonById(id), LessonsLearned.FIELD_CATEGORY).equals("Exam"),
 				"the unlocked field was saved");
 		endTest();
 	}
@@ -259,7 +259,7 @@ public class LessonTestingAutomation {
 	private static void testLockedDelete() {
 		startTest("Locked fields: delete a locked lesson");
 		int id = newLesson();
-		database.setLessonFieldLocked(id, Lesson.FIELD_CATEGORY, true);
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_CATEGORY, true);
 
 		expectMessage(deleteChecked(id), "locked");
 		expect(database.lessonExists(id), "the lesson is still in the database");
@@ -275,21 +275,21 @@ public class LessonTestingAutomation {
 	private static void testValidUpdate() {
 		startTest("Update or delete a lesson: valid update");
 		int id = newLesson();
-		expect(updateChecked(id, Lesson.FIELD_TITLE, "Review session recording request").isEmpty(),
+		expect(updateChecked(id, LessonsLearned.FIELD_TITLE, "Review session recording request").isEmpty(),
 				"a valid title is accepted");
 		String newBody = "Asking that the exam review session be recorded for students who "
 				+ "cannot attend.";
-		expect(updateChecked(id, Lesson.FIELD_BODY, newBody).isEmpty(),
+		expect(updateChecked(id, LessonsLearned.FIELD_BODY, newBody).isEmpty(),
 				"a valid body is accepted");
-		expect(updateChecked(id, Lesson.FIELD_CATEGORY, "Review Sessions").isEmpty(),
+		expect(updateChecked(id, LessonsLearned.FIELD_CATEGORY, "Review Sessions").isEmpty(),
 				"a valid category is accepted");
 
-		Lesson read = database.getLessonById(id);
-		expect(fieldOf(read, Lesson.FIELD_TITLE).equals("Review session recording request"),
+		LessonsLearned read = database.getLessonById(id);
+		expect(fieldOf(read, LessonsLearned.FIELD_TITLE).equals("Review session recording request"),
 				"the new title was saved");
-		expect(fieldOf(read, Lesson.FIELD_BODY).equals(newBody),
+		expect(fieldOf(read, LessonsLearned.FIELD_BODY).equals(newBody),
 				"the new body was saved");
-		expect(fieldOf(read, Lesson.FIELD_CATEGORY).equals("Review Sessions"),
+		expect(fieldOf(read, LessonsLearned.FIELD_CATEGORY).equals("Review Sessions"),
 				"the new category was saved");
 		endTest();
 	}
@@ -303,14 +303,14 @@ public class LessonTestingAutomation {
 	private static void testInvalidUpdate() {
 		startTest("Update or delete a lesson: invalid update");
 		int id = newLesson();
-		expectRejectedUpdate(id, Lesson.FIELD_TITLE, "Title", "");
-		expectRejectedUpdate(id, Lesson.FIELD_TITLE, "Title",
+		expectRejectedUpdate(id, LessonsLearned.FIELD_TITLE, "Title", "");
+		expectRejectedUpdate(id, LessonsLearned.FIELD_TITLE, "Title",
 				text(LessonValidator.MAX_TITLE_LENGTH + 1));
-		expectRejectedUpdate(id, Lesson.FIELD_BODY, "Body", "   ");
-		expectRejectedUpdate(id, Lesson.FIELD_BODY, "Body",
+		expectRejectedUpdate(id, LessonsLearned.FIELD_BODY, "Body", "   ");
+		expectRejectedUpdate(id, LessonsLearned.FIELD_BODY, "Body",
 				text(LessonValidator.MAX_BODY_LENGTH + 1));
-		expectRejectedUpdate(id, Lesson.FIELD_CATEGORY, "Category", "");
-		expectRejectedUpdate(id, Lesson.FIELD_CATEGORY, "Category",
+		expectRejectedUpdate(id, LessonsLearned.FIELD_CATEGORY, "Category", "");
+		expectRejectedUpdate(id, LessonsLearned.FIELD_CATEGORY, "Category",
 				text(LessonValidator.MAX_CATEGORY_LENGTH + 1));
 		endTest();
 	}
@@ -343,7 +343,7 @@ public class LessonTestingAutomation {
 		int before = database.getNumberOfLessons();
 		expect(!database.lessonExists(UNKNOWN_ID), "the ID used really is not in the database");
 
-		expectMessage(updateChecked(UNKNOWN_ID, Lesson.FIELD_TITLE, TITLE), "not found");
+		expectMessage(updateChecked(UNKNOWN_ID, LessonsLearned.FIELD_TITLE, TITLE), "not found");
 		expectMessage(deleteChecked(UNKNOWN_ID), "not found");
 		expect(database.getNumberOfLessons() == before, "nothing changed");
 		endTest();
@@ -447,13 +447,13 @@ public class LessonTestingAutomation {
 	private static void testListFull() {
 		startTest("See a list of my lessons: full list");
 		database.clearAllLessons();
-		addLessonChecked("Lesson one", "Body one", "General");
-		addLessonChecked("Lesson two", "Body two", "Testing");
-		addLessonChecked("Lesson three", "Body three", "Design");
+		addLessonChecked("LessonsLearned one", "Body one", "General");
+		addLessonChecked("LessonsLearned two", "Body two", "Testing");
+		addLessonChecked("LessonsLearned three", "Body three", "Design");
 
-		LessonList all = database.getAllLessons();
+		LessonsLearnedList all = database.getAllLessons();
 		expect(all.size() == 3, "the list holds three lessons");
-		expect(titlesOf(all).equals("Lesson one | Lesson two | Lesson three"),
+		expect(titlesOf(all).equals("LessonsLearned one | LessonsLearned two | LessonsLearned three"),
 				"the contents match what was added");
 		endTest();
 	}
@@ -467,9 +467,9 @@ public class LessonTestingAutomation {
 	private static void testListEmpty() {
 		startTest("See a list of my lessons: empty list");
 		database.clearAllLessons();
-		LessonList none = database.getAllLessons();
+		LessonsLearnedList none = database.getAllLessons();
 		expect(none.size() == 0, "the list has no lessons");
-		expect(none.getMessage().equals(LessonList.NO_LESSONS_MESSAGE),
+		expect(none.getMessage().equals(LessonsLearnedList.NO_LESSONS_MESSAGE),
 				"the list gives the no lessons found message");
 		endTest();
 	}
@@ -482,15 +482,15 @@ public class LessonTestingAutomation {
 	private static void testExamineValid() {
 		startTest("Examine a lesson more closely: valid ID");
 		int id = newLesson();
-		database.setLessonFieldLocked(id, Lesson.FIELD_TITLE, true);
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_TITLE, true);
 		experienceChecked(id, "Asked for a recording", "Posted on Ed Discussion", "10 minutes",
 				"1 person");
 
 		expect(examineError(String.valueOf(id)).isEmpty(), "a valid ID is accepted");
-		Lesson read = database.getLessonById(id);
-		expect(fieldOf(read, Lesson.FIELD_TITLE).equals(TITLE)
-				&& fieldOf(read, Lesson.FIELD_BODY).equals(BODY)
-				&& fieldOf(read, Lesson.FIELD_CATEGORY).equals(CATEGORY), "the fields are returned");
+		LessonsLearned read = database.getLessonById(id);
+		expect(fieldOf(read, LessonsLearned.FIELD_TITLE).equals(TITLE)
+				&& fieldOf(read, LessonsLearned.FIELD_BODY).equals(BODY)
+				&& fieldOf(read, LessonsLearned.FIELD_CATEGORY).equals(CATEGORY), "the fields are returned");
 		expect(lockedText(read).equals("title=true body=false category=false"),
 				"the locked flags are returned");
 		expect(experienceText(read).equals(
@@ -635,25 +635,25 @@ public class LessonTestingAutomation {
 	 * locked, and the new value must be acceptable.
 	 *
 	 * @param id		the lesson to update
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_BODY, or Lesson.FIELD_CATEGORY
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_BODY, or LessonsLearned.FIELD_CATEGORY
 	 * @param value		the new value
 	 *
 	 * @return an empty String if the update was saved, else the error message
 	 */
 	private static String updateChecked(int id, String field, String value) {
-		Lesson lesson = database.getLessonById(id);
-		String error = LessonValidator.checkLessonFound(lesson, id);
-		if (error.isEmpty()) error = LessonValidator.checkFieldNotLocked(lesson, field);
+		LessonsLearned lessonsLearned = database.getLessonById(id);
+		String error = LessonValidator.checkLessonFound(lessonsLearned, id);
+		if (error.isEmpty()) error = LessonValidator.checkFieldNotLocked(lessonsLearned, field);
 		if (error.isEmpty()) {
-			if (Lesson.FIELD_TITLE.equals(field)) error = LessonValidator.checkTitle(value);
-			else if (Lesson.FIELD_BODY.equals(field)) error = LessonValidator.checkBody(value);
+			if (LessonsLearned.FIELD_TITLE.equals(field)) error = LessonValidator.checkTitle(value);
+			else if (LessonsLearned.FIELD_BODY.equals(field)) error = LessonValidator.checkBody(value);
 			else error = LessonValidator.checkCategory(value);
 		}
 		if (!error.isEmpty()) return error;
 
 		boolean saved;
-		if (Lesson.FIELD_TITLE.equals(field)) saved = database.updateLessonTitle(id, value);
-		else if (Lesson.FIELD_BODY.equals(field)) saved = database.updateLessonBody(id, value);
+		if (LessonsLearned.FIELD_TITLE.equals(field)) saved = database.updateLessonTitle(id, value);
+		else if (LessonsLearned.FIELD_BODY.equals(field)) saved = database.updateLessonBody(id, value);
 		else saved = database.updateLessonCategory(id, value);
 		return saved ? "" : "The " + field + " could not be saved.";
 	}
@@ -666,9 +666,9 @@ public class LessonTestingAutomation {
 	 * @return an empty String if the lesson was deleted, else the error message
 	 */
 	private static String deleteChecked(int id) {
-		Lesson lesson = database.getLessonById(id);
-		String error = LessonValidator.checkLessonFound(lesson, id);
-		if (error.isEmpty()) error = LessonValidator.checkCanDelete(lesson);
+		LessonsLearned lessonsLearned = database.getLessonById(id);
+		String error = LessonValidator.checkLessonFound(lessonsLearned, id);
+		if (error.isEmpty()) error = LessonValidator.checkCanDelete(lessonsLearned);
 		if (!error.isEmpty()) return error;
 
 		return database.deleteLesson(id) ? "" : "The lesson could not be deleted.";
@@ -737,55 +737,55 @@ public class LessonTestingAutomation {
 	/**********
 	 * Reads one core field of a lesson, tolerating a lesson that was not found.
 	 *
-	 * @param lesson	the lesson to read, which may be null
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_BODY, or Lesson.FIELD_CATEGORY
+	 * @param lessonsLearned	the lesson to read, which may be null
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_BODY, or LessonsLearned.FIELD_CATEGORY
 	 *
 	 * @return the field's value, or a marker if the lesson is null
 	 */
-	private static String fieldOf(Lesson lesson, String field) {
-		if (lesson == null) return "<lesson was not found>";
-		if (Lesson.FIELD_TITLE.equals(field)) return lesson.getTitle();
-		if (Lesson.FIELD_BODY.equals(field)) return lesson.getBody();
-		return lesson.getCategory();
+	private static String fieldOf(LessonsLearned lessonsLearned, String field) {
+		if (lessonsLearned == null) return "<lesson was not found>";
+		if (LessonsLearned.FIELD_TITLE.equals(field)) return lessonsLearned.getTitle();
+		if (LessonsLearned.FIELD_BODY.equals(field)) return lessonsLearned.getBody();
+		return lessonsLearned.getCategory();
 	}
 
 	/**********
 	 * Summarizes the three locked flags of a lesson.
 	 *
-	 * @param lesson	the lesson to describe, which may be null
+	 * @param lessonsLearned	the lesson to describe, which may be null
 	 *
 	 * @return for example "title=true body=false category=false", or a marker if null
 	 */
-	private static String lockedText(Lesson lesson) {
-		if (lesson == null) return "<lesson was not found>";
-		return "title=" + lesson.getTitleLocked() + " body=" + lesson.getBodyLocked()
-				+ " category=" + lesson.getCategoryLocked();
+	private static String lockedText(LessonsLearned lessonsLearned) {
+		if (lessonsLearned == null) return "<lesson was not found>";
+		return "title=" + lessonsLearned.getTitleLocked() + " body=" + lessonsLearned.getBodyLocked()
+				+ " category=" + lessonsLearned.getCategoryLocked();
 	}
 
 	/**********
 	 * Summarizes the experience information of a lesson.
 	 *
-	 * @param lesson	the lesson to describe, which may be null
+	 * @param lessonsLearned	the lesson to describe, which may be null
 	 *
 	 * @return "what | how | duration | effort", "none" if there is none, or a marker if null
 	 */
-	private static String experienceText(Lesson lesson) {
-		if (lesson == null) return "<lesson was not found>";
-		if (!lesson.hasExperienceInformation()) return "none";
-		return lesson.getWhatWasDone() + " | " + lesson.getHowItWasDone() + " | "
-				+ lesson.getDuration() + " | " + lesson.getEffort();
+	private static String experienceText(LessonsLearned lessonsLearned) {
+		if (lessonsLearned == null) return "<lesson was not found>";
+		if (!lessonsLearned.hasExperienceInformation()) return "none";
+		return lessonsLearned.getWhatWasDone() + " | " + lessonsLearned.getHowItWasDone() + " | "
+				+ lessonsLearned.getDuration() + " | " + lessonsLearned.getEffort();
 	}
 
 	/**********
-	 * Lists the titles in a LessonList, in order.
+	 * Lists the titles in a LessonsLearnedList, in order.
 	 *
 	 * @param list	the list to describe
 	 *
 	 * @return the titles separated by " | "
 	 */
-	private static String titlesOf(LessonList list) {
+	private static String titlesOf(LessonsLearnedList list) {
 		StringBuilder sb = new StringBuilder();
-		for (Lesson l : list.getLessons()) {
+		for (LessonsLearned l : list.getLessons()) {
 			if (sb.length() > 0) sb.append(" | ");
 			sb.append(l.getTitle());
 		}
@@ -800,8 +800,8 @@ public class LessonTestingAutomation {
 	 *
 	 * @return true if the list holds that lesson, else false
 	 */
-	private static boolean containsId(LessonList list, int id) {
-		for (Lesson l : list.getLessons()) {
+	private static boolean containsId(LessonsLearnedList list, int id) {
+		for (LessonsLearned l : list.getLessons()) {
 			if (l.getId() == id) return true;
 		}
 		return false;

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import database.Database;
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 import guiAddLesson.ModelAddLesson;
 import guiMyLessons.ModelMyLessons;
 import guiLessonDetail.ModelLessonDetail;
@@ -150,7 +150,7 @@ public class ContributorLessonTestingAutomation {
 	 * lessons I added" possible. </p>
 	 *
 	 * <p> How the code satisfies it: Database.addLesson with four arguments stores the username
-	 * in the addedBy column, and getLessonById reads it back into Lesson.getAddedBy. </p>
+	 * in the addedBy column, and getLessonById reads it back into LessonsLearned.getAddedBy. </p>
 	 *
 	 * <p> How to read the output: PASS means the lesson read back carries Ann's username. </p>
 	 */
@@ -158,7 +158,7 @@ public class ContributorLessonTestingAutomation {
 		startTest("testAddedByIsStored", "R1, R2");
 		int id = database.addLesson("A stored author", "Body text.", "Testing", ann);
 		created.add(id);
-		Lesson read = database.getLessonById(id);
+		LessonsLearned read = database.getLessonById(id);
 		expectEqual("the lesson is saved with an ID", "yes", yesNo(id > 0));
 		expectEqual("the author stored with the lesson", ann, read == null ? "no lesson" : read.getAddedBy());
 		endTest();
@@ -184,19 +184,19 @@ public class ContributorLessonTestingAutomation {
 		int none = database.addLesson("No author", "Body.", "Testing");
 		created.add(a1); created.add(a2); created.add(b1); created.add(none);
 
-		List<Lesson> annList = database.getLessonsAddedBy(ann).getLessons();
-		List<Lesson> benList = database.getLessonsAddedBy(ben).getLessons();
+		List<LessonsLearned> annList = database.getLessonsAddedBy(ann).getLessons();
+		List<LessonsLearned> benList = database.getLessonsAddedBy(ben).getLessons();
 		// Ann already owns one lesson from the previous test, so count only these
 		int annCount = 0;
 		boolean onlyAnn = true;
-		for (Lesson l : annList) {
+		for (LessonsLearned l : annList) {
 			if (!ann.equals(l.getAddedBy())) onlyAnn = false;
 			if (l.getId() == a1 || l.getId() == a2) annCount++;
 			if (l.getId() == none) onlyAnn = false;
 		}
 		expectEqual("how many of Ann's two new lessons are in her list", 2, annCount);
 		expectEqual("every lesson in Ann's list is hers", "yes", yesNo(onlyAnn));
-		expectEqual("the IDs in Ben's list", List.of(b1), benList.stream().map(Lesson::getId).toList());
+		expectEqual("the IDs in Ben's list", List.of(b1), benList.stream().map(LessonsLearned::getId).toList());
 		endTest();
 	}
 
@@ -217,7 +217,7 @@ public class ContributorLessonTestingAutomation {
 		String message = ModelAddLesson.addLesson(database, ann, "Valid title", "Testing",
 				"A valid body.");
 		created.add(ModelAddLesson.lastAddedId);
-		Lesson read = database.getLessonById(ModelAddLesson.lastAddedId);
+		LessonsLearned read = database.getLessonById(ModelAddLesson.lastAddedId);
 		expectEqual("the message returned", "", message);
 		expectEqual("the stored lesson (title | category | body | author)",
 				"Valid title | Testing | A valid body. | " + ann, describe(read));
@@ -283,7 +283,7 @@ public class ContributorLessonTestingAutomation {
 		String title = "Don't trust \"fast\" fixes";
 		String message = ModelAddLesson.addLesson(database, ann, title, "Testing", "Body.");
 		created.add(ModelAddLesson.lastAddedId);
-		Lesson read = database.getLessonById(ModelAddLesson.lastAddedId);
+		LessonsLearned read = database.getLessonById(ModelAddLesson.lastAddedId);
 		expectEqual("the message returned", "", message);
 		expectEqual("the title read back", title, read == null ? "no lesson" : read.getTitle());
 		endTest();
@@ -311,7 +311,7 @@ public class ContributorLessonTestingAutomation {
 		created.add(benId);
 
 		boolean hasMine = false, hasBens = false, allMine = true;
-		for (Lesson l : ModelMyLessons.lessonsFor(database, ann).getLessons()) {
+		for (LessonsLearned l : ModelMyLessons.lessonsFor(database, ann).getLessons()) {
 			if (l.getId() == annId) hasMine = true;
 			if (l.getId() == benId) hasBens = true;
 			if (!ann.equals(l.getAddedBy())) allMine = false;
@@ -364,9 +364,9 @@ public class ContributorLessonTestingAutomation {
 		created.add(id);
 
 		String none = ModelMyLessons.rowText(database.getLessonById(id));
-		database.setLessonFieldLocked(id, Lesson.FIELD_CATEGORY, true);		// a Curator locks one field
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_CATEGORY, true);		// a Curator locks one field
 		String one = ModelMyLessons.rowText(database.getLessonById(id));
-		database.setLessonFieldLocked(id, Lesson.FIELD_BODY, true);			// and then a second
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_BODY, true);			// and then a second
 		String two = ModelMyLessons.rowText(database.getLessonById(id));
 		expectEqual("the row with no locked field", "Lock count lesson  (Testing)", none);
 		expectEqual("the row with one locked field", "Lock count lesson  (Testing)  -  1 field locked", one);
@@ -389,8 +389,8 @@ public class ContributorLessonTestingAutomation {
 	private static void testOpenOwnLesson() {
 		startTest("testOpenOwnLesson", "R3");
 		int id = annLesson("Open me", "Design", "Open body.");
-		database.setLessonFieldLocked(id, Lesson.FIELD_CATEGORY, true);	// a Curator locks it
-		Lesson l = ModelLessonDetail.lessonFor(database, ann, id);
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_CATEGORY, true);	// a Curator locks it
+		LessonsLearned l = ModelLessonDetail.lessonFor(database, ann, id);
 		expectEqual("the lesson Ann opens (title | category | body | author)",
 				"Open me | Design | Open body. | " + ann, describe(l));
 		expectEqual("the fields shown as locked", "category", lockedFields(l));
@@ -430,7 +430,7 @@ public class ContributorLessonTestingAutomation {
 	private static void testRenameTitle() {
 		startTest("testRenameTitle", "R4");
 		int id = annLesson("Old name", "Testing", "Body.");
-		String message = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_TITLE, "New name");
+		String message = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_TITLE, "New name");
 		expectEqual("the message returned", "", message);
 		expectEqual("the stored title", "New name", database.getLessonById(id).getTitle());
 		endTest();
@@ -449,9 +449,9 @@ public class ContributorLessonTestingAutomation {
 	private static void testUpdateCategoryAndBody() {
 		startTest("testUpdateCategoryAndBody", "R4");
 		int id = annLesson("Update me", "Testing", "Old body.");
-		String m1 = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_CATEGORY, "Design");
-		String m2 = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_BODY, "New body.");
-		Lesson l = database.getLessonById(id);
+		String m1 = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_CATEGORY, "Design");
+		String m2 = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_BODY, "New body.");
+		LessonsLearned l = database.getLessonById(id);
 		expectEqual("the message for the category update", "", m1);
 		expectEqual("the message for the body update", "", m2);
 		expectEqual("the stored category", "Design", l.getCategory());
@@ -475,8 +475,8 @@ public class ContributorLessonTestingAutomation {
 	private static void testUpdateLockedFieldRefused() {
 		startTest("testUpdateLockedFieldRefused", "R4");
 		int id = annLesson("Locked title", "Testing", "Body.");
-		database.setLessonFieldLocked(id, Lesson.FIELD_TITLE, true);		// a Curator locks it
-		String message = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_TITLE, "Changed");
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_TITLE, true);		// a Curator locks it
+		String message = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_TITLE, "Changed");
 		expectMessage(message, "locked");
 		expectEqual("the stored title", "Locked title", database.getLessonById(id).getTitle());
 		endTest();
@@ -496,7 +496,7 @@ public class ContributorLessonTestingAutomation {
 	private static void testUpdateBlankValueRefused() {
 		startTest("testUpdateBlankValueRefused", "R4");
 		int id = annLesson("Blank update", "Testing", "Body.");
-		String message = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_CATEGORY, " ");
+		String message = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_CATEGORY, " ");
 		expectMessage(message, "Category cannot be blank.");
 		expectEqual("the stored category", "Testing", database.getLessonById(id).getCategory());
 		endTest();
@@ -537,7 +537,7 @@ public class ContributorLessonTestingAutomation {
 	private static void testDeleteWithLockedFieldRefused() {
 		startTest("testDeleteWithLockedFieldRefused", "R5");
 		int id = annLesson("Locked delete", "Testing", "Body.");
-		database.setLessonFieldLocked(id, Lesson.FIELD_BODY, true);			// a Curator locks it
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_BODY, true);			// a Curator locks it
 		String message = ModelLessonDetail.deleteLesson(database, ann, id);
 		expectMessage(message, "cannot be deleted");
 		expectEqual("the lesson still exists", "yes", yesNo(database.lessonExists(id)));
@@ -560,9 +560,9 @@ public class ContributorLessonTestingAutomation {
 		startTest("testOtherRoleEditIsSeen", "R6");
 		int id = annLesson("Before the Curator", "Testing", "Body.");
 		database.updateLessonTitle(id, "After the Curator");				// a Curator edits it
-		Lesson l = ModelLessonDetail.lessonFor(database, ann, id);
+		LessonsLearned l = ModelLessonDetail.lessonFor(database, ann, id);
 		boolean inList = false;
-		for (Lesson x : ModelMyLessons.lessonsFor(database, ann).getLessons())
+		for (LessonsLearned x : ModelMyLessons.lessonsFor(database, ann).getLessons())
 			if (x.getId() == id && "After the Curator".equals(x.getTitle())) inList = true;
 		expectEqual("the title on the lesson page", "After the Curator", l == null ? "no lesson" : l.getTitle());
 		expectEqual("the new title is in Ann's list", "yes", yesNo(inList));
@@ -584,8 +584,8 @@ public class ContributorLessonTestingAutomation {
 	private static void testOtherRoleLockIsEnforced() {
 		startTest("testOtherRoleLockIsEnforced", "R6");
 		int id = annLesson("Curator locks body", "Testing", "Original body.");
-		database.setLessonFieldLocked(id, Lesson.FIELD_BODY, true);			// an Admin locks it
-		String message = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_BODY, "Changed.");
+		database.setLessonFieldLocked(id, LessonsLearned.FIELD_BODY, true);			// an Admin locks it
+		String message = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_BODY, "Changed.");
 		expectMessage(message, "locked");
 		expectEqual("the stored body", "Original body.", database.getLessonById(id).getBody());
 		endTest();
@@ -607,7 +607,7 @@ public class ContributorLessonTestingAutomation {
 		startTest("testOtherRoleDeleteThenEdit", "R6");
 		int id = annLesson("Deleted by Admin", "Testing", "Body.");
 		database.deleteLesson(id);											// an Admin deletes it
-		String m1 = ModelLessonDetail.updateField(database, ann, id, Lesson.FIELD_TITLE, "Too late");
+		String m1 = ModelLessonDetail.updateField(database, ann, id, LessonsLearned.FIELD_TITLE, "Too late");
 		String m2 = ModelLessonDetail.deleteLesson(database, ann, id);
 		expectMessage(m1, "That lesson is no longer available.");
 		expectMessage(m2, "That lesson is no longer available.");
@@ -651,11 +651,11 @@ public class ContributorLessonTestingAutomation {
 	private static void testOtherContributorCannotChange() {
 		startTest("testOtherContributorCannotChange", "R7");
 		int id = annLesson("Ann keeps this", "Testing", "Body.");
-		String m1 = ModelLessonDetail.updateField(database, ben, id, Lesson.FIELD_TITLE, "Ben's now");
+		String m1 = ModelLessonDetail.updateField(database, ben, id, LessonsLearned.FIELD_TITLE, "Ben's now");
 		String m2 = ModelLessonDetail.deleteLesson(database, ben, id);
 		expectMessage(m1, "That lesson is no longer available.");
 		expectMessage(m2, "That lesson is no longer available.");
-		Lesson l = database.getLessonById(id);
+		LessonsLearned l = database.getLessonById(id);
 		expectEqual("the title of Ann's lesson after Ben's attempts", "Ann keeps this",
 				l == null ? "no lesson" : l.getTitle());
 		endTest();
@@ -742,41 +742,41 @@ public class ContributorLessonTestingAutomation {
 	/**********
 	 * Describes a lesson's core information and author on one line, for printing and comparing.
 	 *
-	 * @param lesson	the lesson, or null
+	 * @param lessonsLearned	the lesson, or null
 	 *
 	 * @return "title | category | body | author", or "no lesson"
 	 */
-	private static String describe(Lesson lesson) {
-		if (lesson == null) return "no lesson";
-		return lesson.getTitle() + " | " + lesson.getCategory() + " | " + lesson.getBody() + " | "
-				+ lesson.getAddedBy();
+	private static String describe(LessonsLearned lessonsLearned) {
+		if (lessonsLearned == null) return "no lesson";
+		return lessonsLearned.getTitle() + " | " + lessonsLearned.getCategory() + " | " + lessonsLearned.getBody() + " | "
+				+ lessonsLearned.getAddedBy();
 	}
 
 	/**********
 	 * Names the locked core fields of a lesson.
 	 *
-	 * @param lesson	the lesson, or null
+	 * @param lessonsLearned	the lesson, or null
 	 *
 	 * @return the locked fields separated by commas, "none", or "no lesson"
 	 */
-	private static String lockedFields(Lesson lesson) {
-		if (lesson == null) return "no lesson";
+	private static String lockedFields(LessonsLearned lessonsLearned) {
+		if (lessonsLearned == null) return "no lesson";
 		List<String> locked = new ArrayList<String>();
-		if (lesson.getTitleLocked()) locked.add(Lesson.FIELD_TITLE);
-		if (lesson.getCategoryLocked()) locked.add(Lesson.FIELD_CATEGORY);
-		if (lesson.getBodyLocked()) locked.add(Lesson.FIELD_BODY);
+		if (lessonsLearned.getTitleLocked()) locked.add(LessonsLearned.FIELD_TITLE);
+		if (lessonsLearned.getCategoryLocked()) locked.add(LessonsLearned.FIELD_CATEGORY);
+		if (lessonsLearned.getBodyLocked()) locked.add(LessonsLearned.FIELD_BODY);
 		return locked.isEmpty() ? "none" : String.join(", ", locked);
 	}
 
 	/**********
 	 * Says which lesson, if any, a look-up returned.
 	 *
-	 * @param lesson	the lesson returned, or null
+	 * @param lessonsLearned	the lesson returned, or null
 	 *
 	 * @return "lesson N", or "none"
 	 */
-	private static String found(Lesson lesson) {
-		return lesson == null ? "none" : "lesson " + lesson.getId();
+	private static String found(LessonsLearned lessonsLearned) {
+		return lessonsLearned == null ? "none" : "lesson " + lessonsLearned.getId();
 	}
 
 	/**********
@@ -803,7 +803,7 @@ public class ContributorLessonTestingAutomation {
 			for (int id : created) if (id > 0) database.deleteLesson(id);
 			for (String who : new String[] { ann, ben }) {
 				if (who == null) continue;
-				for (Lesson l : database.getLessonsAddedBy(who).getLessons()) database.deleteLesson(l.getId());
+				for (LessonsLearned l : database.getLessonsAddedBy(who).getLessons()) database.deleteLesson(l.getId());
 			}
 		} catch (Exception e) {
 			System.out.println("Warning: clean up failed: " + e.getMessage());

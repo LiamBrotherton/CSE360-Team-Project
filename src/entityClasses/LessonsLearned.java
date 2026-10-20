@@ -1,9 +1,9 @@
 package entityClasses;
 
 /*******
- * <p> Title: Lesson Class </p>
+ * <p> Title: LessonsLearned Class </p>
  * 
- * <p> Description: This Lesson class represents a lesson learned entity in the system.  It 
+ * <p> Description: This LessonsLearned class represents a lesson learned entity in the system.  It 
  *  contains the core information (title, body, category), a locked flag for each core field, 
  *  and the optional experience information (what was done, how it was done, duration, and 
  *  effort). </p>
@@ -16,7 +16,7 @@ package entityClasses;
  *
  */
 
-public class Lesson {
+public class LessonsLearned {
 	
 	/*
 	 * These are the names of the fields that can be locked.  They are here, with the entity,
@@ -55,7 +55,7 @@ public class Lesson {
 
 
     /*****
-     * <p> Method: Lesson(int id, String title, String body, String category, 
+     * <p> Method: LessonsLearned(int id, String title, String body, String category, 
      * 		boolean titleLocked, boolean bodyLocked, boolean categoryLocked, 
      * 		String whatWasDone, String howItWasDone, String duration, String effort) </p>
      * 
@@ -85,7 +85,7 @@ public class Lesson {
      * 
      */
     // Constructor kept for the code that existed before addedBy; such a lesson has no author.
-    public Lesson(int id, String title, String body, String category, boolean titleLocked,
+    public LessonsLearned(int id, String title, String body, String category, boolean titleLocked,
     		boolean bodyLocked, boolean categoryLocked, String whatWasDone, String howItWasDone,
     		String duration, String effort) {
     	this(id, title, body, category, titleLocked, bodyLocked, categoryLocked, whatWasDone,
@@ -94,7 +94,7 @@ public class Lesson {
 
 
     /*****
-     * <p> Method: Lesson(int id, String title, String body, String category,
+     * <p> Method: LessonsLearned(int id, String title, String body, String category,
      * 		boolean titleLocked, boolean bodyLocked, boolean categoryLocked,
      * 		String whatWasDone, String howItWasDone, String duration, String effort,
      * 		String addedBy) </p>
@@ -127,8 +127,8 @@ public class Lesson {
      * @param addedBy specifies the username of the Contributor who added the lesson, or null
      *
      */
-    // Constructor to initialize a new Lesson object with all of its stored attributes.
-    public Lesson(int id, String title, String body, String category, boolean titleLocked,
+    // Constructor to initialize a new LessonsLearned object with all of its stored attributes.
+    public LessonsLearned(int id, String title, String body, String category, boolean titleLocked,
     		boolean bodyLocked, boolean categoryLocked, String whatWasDone, String howItWasDone,
     		String duration, String effort, String addedBy) {
         this.addedBy = addedBy;
@@ -469,7 +469,7 @@ public class Lesson {
     @Override
     public String toString() {
     	StringBuilder sb = new StringBuilder();
-    	sb.append("Lesson ").append(id).append("\n");
+    	sb.append("LessonsLearned ").append(id).append("\n");
     	sb.append("  Title:    ").append(title).append(titleLocked ? "  [locked]" : "").append("\n");
     	sb.append("  Body:     ").append(body).append(bodyLocked ? "  [locked]" : "").append("\n");
     	sb.append("  Category: ").append(category).append(categoryLocked ? "  [locked]" : "");

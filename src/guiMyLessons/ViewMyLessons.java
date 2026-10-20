@@ -11,8 +11,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import database.Database;
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import entityClasses.User;
 import guiTools.GuiStyle;
 
@@ -117,7 +117,7 @@ public class ViewMyLessons {
 	 * <p> Method: displayMyLessons(Stage ps, User user, String message) </p>
 	 *
 	 * <p> Description: This method displays the My Lessons page with a message showing.  The
-	 * Lesson Details page uses it to return here and say why, for example when another role has
+	 * LessonsLearned Details page uses it to return here and say why, for example when another role has
 	 * deleted the lesson that was open (R6).
 	 *
 	 * It first sets up the shared attributes so we don't have to pass parameters.  It then checks
@@ -148,12 +148,12 @@ public class ViewMyLessons {
 		theStage.show();
 
 		// Populate the dynamic aspects of the GUI: this Contributor's lessons, read fresh (R2, R6)
-		LessonList lessons = ModelMyLessons.lessonsFor(theDatabase, theUser.getUserName());
+		LessonsLearnedList lessons = ModelMyLessons.lessonsFor(theDatabase, theUser.getUserName());
 		list_Lessons.getItems().clear();
 		lessonIds.clear();
-		for (Lesson lesson : lessons.getLessons()) {
-			list_Lessons.getItems().add(ModelMyLessons.rowText(lesson));
-			lessonIds.add(lesson.getId());
+		for (LessonsLearned lessonsLearned : lessons.getLessons()) {
+			list_Lessons.getItems().add(ModelMyLessons.rowText(lessonsLearned));
+			lessonIds.add(lessonsLearned.getId());
 		}
 		label_Message.setText(message);
 		GuiStyle.startUnfocused(theRootPane);	// No button looks pressed on arrival

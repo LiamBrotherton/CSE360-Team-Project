@@ -16,14 +16,14 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import database.Database;
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 import entityClasses.User;
 import guiTools.GuiStyle;
 
 /*******
  * <p> Title: ViewLessonDetail Class. </p>
  *
- * <p> Description: The Java/FX-based Lesson Details Page.  It shows a Contributor one of the
+ * <p> Description: The Java/FX-based LessonsLearned Details Page.  It shows a Contributor one of the
  * lessons that Contributor added: its title, its category, and its body, which is the lesson's
  * core information and nothing else.  Information other roles may add to a lesson is not shown.
  *
@@ -79,7 +79,7 @@ public class ViewLessonDetail {
 
 	// These are the widget attributes for the GUI.  The page is one card holding the logo, the
 	// title, a row for each core field, a line for messages, and the two buttons.
-	private static Label label_PageTitle = new Label("Lesson details");
+	private static Label label_PageTitle = new Label("LessonsLearned details");
 	private static Label label_Purpose = new Label(
 			"A Curator or Admin may lock a field so that it cannot be changed.");
 
@@ -134,7 +134,7 @@ public class ViewLessonDetail {
 	 * <p> Method: displayLessonDetail(Stage ps, User user, int lessonId) </p>
 	 *
 	 * <p> Description: This method is the single entry point from outside this package to cause
-	 * the Lesson Details page to be displayed for one lesson, with no message showing. </p>
+	 * the LessonsLearned Details page to be displayed for one lesson, with no message showing. </p>
 	 *
 	 * @param ps specifies the JavaFX Stage to be used for this GUI and it's methods
 	 *
@@ -150,7 +150,7 @@ public class ViewLessonDetail {
 	/**********
 	 * <p> Method: displayLessonDetail(Stage ps, User user, int lessonId, String message) </p>
 	 *
-	 * <p> Description: This method displays the Lesson Details page with a message showing.  The
+	 * <p> Description: This method displays the LessonsLearned Details page with a message showing.  The
 	 * controller uses it to show the lesson again after an Edit, with the reason if the change
 	 * was refused.
 	 *
@@ -181,25 +181,25 @@ public class ViewLessonDetail {
 		if (theView == null) theView = new ViewLessonDetail();
 
 		// R6 and R7: the lesson must still exist and must be this Contributor's
-		Lesson lesson = ModelLessonDetail.lessonFor(theDatabase, theUser.getUserName(), lessonId);
-		if (lesson == null) {
+		LessonsLearned lessonsLearned = ModelLessonDetail.lessonFor(theDatabase, theUser.getUserName(), lessonId);
+		if (lessonsLearned == null) {
 			guiMyLessons.ViewMyLessons.displayMyLessons(theStage, theUser,
 					ModelLessonDetail.NOT_AVAILABLE);
 			return;
 		}
 
 		// R3: the core information, and which fields another role has locked (R4)
-		GuiStyle.setValueText(label_TitleValue, lesson.getTitle());
-		GuiStyle.setValueText(label_CategoryValue, lesson.getCategory());
-		label_BodyValue.setText(lesson.getBody());
+		GuiStyle.setValueText(label_TitleValue, lessonsLearned.getTitle());
+		GuiStyle.setValueText(label_CategoryValue, lessonsLearned.getCategory());
+		label_BodyValue.setText(lessonsLearned.getBody());
 		scroll_Body.setVvalue(0);
-		showLock(button_EditTitle, label_TitleLocked, lesson.getTitleLocked());
-		showLock(button_EditCategory, label_CategoryLocked, lesson.getCategoryLocked());
-		showLock(button_EditBody, label_BodyLocked, lesson.getBodyLocked());
+		showLock(button_EditTitle, label_TitleLocked, lessonsLearned.getTitleLocked());
+		showLock(button_EditCategory, label_CategoryLocked, lessonsLearned.getCategoryLocked());
+		showLock(button_EditBody, label_BodyLocked, lessonsLearned.getBodyLocked());
 		label_Message.setText(message);
 
 		// Set the title for the window, display the page, and wait for the user to act
-		theStage.setTitle("CSE 360 Foundation Code: Lesson Details");
+		theStage.setTitle("CSE 360 Foundation Code: LessonsLearned Details");
 		theStage.setScene(theLessonDetailScene);
 		theStage.show();
 		GuiStyle.startUnfocused(theRootPane);	// No button looks pressed on arrival
@@ -224,7 +224,7 @@ public class ViewLessonDetail {
 		GuiStyle.applyBackground(theRootPane);
 
 		// The question asked before a delete, with the fixed wording (R5)
-		alertConfirmDelete.setTitle("Delete Lesson");
+		alertConfirmDelete.setTitle("Delete LessonsLearned");
 		alertConfirmDelete.setHeaderText("Delete this lesson?");
 		alertConfirmDelete.setContentText("This cannot be undone.");
 
@@ -238,15 +238,15 @@ public class ViewLessonDetail {
 
 		// Title and Category: a name, the value below it, and Edit or "Locked" to the right
 		setupRowUI(label_Title, label_TitleValue, button_EditTitle, label_TitleLocked, 170);
-		button_EditTitle.setOnAction((_) -> ControllerLessonDetail.performEdit(Lesson.FIELD_TITLE));
+		button_EditTitle.setOnAction((_) -> ControllerLessonDetail.performEdit(LessonsLearned.FIELD_TITLE));
 
 		setupRowUI(label_Category, label_CategoryValue, button_EditCategory, label_CategoryLocked, 230);
 		button_EditCategory.setOnAction((_) ->
-				ControllerLessonDetail.performEdit(Lesson.FIELD_CATEGORY));
+				ControllerLessonDetail.performEdit(LessonsLearned.FIELD_CATEGORY));
 
 		// Body: the value can be long, so it wraps inside a fixed area that scrolls (Review Focus 4)
 		setupRowUI(label_Body, null, button_EditBody, label_BodyLocked, 290);
-		button_EditBody.setOnAction((_) -> ControllerLessonDetail.performEdit(Lesson.FIELD_BODY));
+		button_EditBody.setOnAction((_) -> ControllerLessonDetail.performEdit(LessonsLearned.FIELD_BODY));
 		GuiStyle.styleCardLabel(label_BodyValue);
 		label_BodyValue.setWrapText(true);
 		label_BodyValue.setMaxWidth(valueWidth - 30);
@@ -303,7 +303,7 @@ public class ViewLessonDetail {
 	 * heading.  Title and Category use a one-line dialog.  Body uses a dialog with a text area,
 	 * since a body is usually several lines long. </p>
 	 *
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_CATEGORY, or Lesson.FIELD_BODY
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_CATEGORY, or LessonsLearned.FIELD_BODY
 	 * @param current	the value to start from
 	 * @param problem	why the last value was refused, or the empty String
 	 *
@@ -313,7 +313,7 @@ public class ViewLessonDetail {
 		String name = Character.toUpperCase(field.charAt(0)) + field.substring(1);
 		String heading = problem.isEmpty() ? "Change the " + field + " of this lesson" : problem;
 
-		if (!Lesson.FIELD_BODY.equals(field)) {
+		if (!LessonsLearned.FIELD_BODY.equals(field)) {
 			TextInputDialog dialog = new TextInputDialog(current);
 			dialog.setTitle("Edit " + name);
 			dialog.setHeaderText(heading);

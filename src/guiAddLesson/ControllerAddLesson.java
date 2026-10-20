@@ -3,7 +3,7 @@ package guiAddLesson;
 /*******
  * <p> Title: ControllerAddLesson Class. </p>
  *
- * <p> Description: The Java/FX-based Add a Lesson Page controller.  This class provides the
+ * <p> Description: The Java/FX-based Add a LessonsLearned Page controller.  This class provides the
  * controller actions for the page's two buttons, Save and Cancel.
  *
  * The class has been written assuming that the View or the Model are the only class methods that

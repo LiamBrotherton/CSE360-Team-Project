@@ -1,13 +1,13 @@
 package guiLessonDetail;
 
 import database.Database;
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 import inputRecognizer.LessonValidator;
 
 /*******
  * <p> Title: ModelLessonDetail Class. </p>
  *
- * <p> Description: The Lesson Details Page Model.  It holds every rule for a Contributor seeing
+ * <p> Description: The LessonsLearned Details Page Model.  It holds every rule for a Contributor seeing
  * and managing one lesson: opening it, changing one of its core fields, and deleting it.
  *
  * The rules live here and not in the View or the Controller so that the testing automation can
@@ -46,7 +46,7 @@ public class ModelLessonDetail {
 	}
 
 	/**********
-	 * <p> Method: Lesson lessonFor(Database db, String username, int lessonId) </p>
+	 * <p> Method: LessonsLearned lessonFor(Database db, String username, int lessonId) </p>
 	 *
 	 * <p> Description: Gets a lesson for the Contributor who added it (R3, R7).  The lesson is
 	 * read from the database every time, so a change, lock or deletion made by a Curator or Admin
@@ -58,12 +58,12 @@ public class ModelLessonDetail {
 	 *
 	 * @return the lesson, or null if it does not exist or another Contributor added it
 	 */
-	public static Lesson lessonFor(Database db, String username, int lessonId) {
-		Lesson lesson = db.getLessonById(lessonId);
+	public static LessonsLearned lessonFor(Database db, String username, int lessonId) {
+		LessonsLearned lessonsLearned = db.getLessonById(lessonId);
 
 		// R7: a lesson added by someone else is treated exactly like one that does not exist
-		if (lesson == null || username == null || !username.equals(lesson.getAddedBy())) return null;
-		return lesson;
+		if (lessonsLearned == null || username == null || !username.equals(lessonsLearned.getAddedBy())) return null;
+		return lessonsLearned;
 	}
 
 	/**********
@@ -79,7 +79,7 @@ public class ModelLessonDetail {
 	 * @param db		the database to change
 	 * @param username	the Contributor asking
 	 * @param lessonId	the lesson to change
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_CATEGORY, or Lesson.FIELD_BODY
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_CATEGORY, or LessonsLearned.FIELD_BODY
 	 * @param value		the new value
 	 *
 	 * @return the empty String if the field was changed, else the message explaining why not
@@ -87,11 +87,11 @@ public class ModelLessonDetail {
 	public static String updateField(Database db, String username, int lessonId, String field,
 			String value) {
 		// R6 and R7: the lesson must still exist and must be this Contributor's
-		Lesson lesson = lessonFor(db, username, lessonId);
-		if (lesson == null) return NOT_AVAILABLE;
+		LessonsLearned lessonsLearned = lessonFor(db, username, lessonId);
+		if (lessonsLearned == null) return NOT_AVAILABLE;
 
 		// R4: another role may have locked this field so the Contributor cannot alter it
-		String problem = LessonValidator.checkFieldNotLocked(lesson, field);
+		String problem = LessonValidator.checkFieldNotLocked(lessonsLearned, field);
 		if (!problem.isEmpty()) return problem;
 
 		// R4: the new value must be acceptable core information, by the same rule as R1
@@ -99,8 +99,8 @@ public class ModelLessonDetail {
 		if (!problem.isEmpty()) return problem;
 
 		boolean saved;
-		if (Lesson.FIELD_TITLE.equals(field)) saved = db.updateLessonTitle(lessonId, value);
-		else if (Lesson.FIELD_CATEGORY.equals(field)) saved = db.updateLessonCategory(lessonId, value);
+		if (LessonsLearned.FIELD_TITLE.equals(field)) saved = db.updateLessonTitle(lessonId, value);
+		else if (LessonsLearned.FIELD_CATEGORY.equals(field)) saved = db.updateLessonCategory(lessonId, value);
 		else saved = db.updateLessonBody(lessonId, value);
 		return saved ? "" : SAVE_FAILED;
 	}
@@ -113,14 +113,14 @@ public class ModelLessonDetail {
 	 * open with what was typed when the value is refused, so the Contributor can fix it rather
 	 * than type it again. </p>
 	 *
-	 * @param field		Lesson.FIELD_TITLE, Lesson.FIELD_CATEGORY, or Lesson.FIELD_BODY
+	 * @param field		LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_CATEGORY, or LessonsLearned.FIELD_BODY
 	 * @param value		the new value
 	 *
 	 * @return the empty String if the value is acceptable, else the message explaining why not
 	 */
 	public static String checkValue(String field, String value) {
-		if (Lesson.FIELD_TITLE.equals(field)) return LessonValidator.checkTitle(value);
-		if (Lesson.FIELD_CATEGORY.equals(field)) return LessonValidator.checkCategory(value);
+		if (LessonsLearned.FIELD_TITLE.equals(field)) return LessonValidator.checkTitle(value);
+		if (LessonsLearned.FIELD_CATEGORY.equals(field)) return LessonValidator.checkCategory(value);
 		return LessonValidator.checkBody(value);
 	}
 
@@ -140,11 +140,11 @@ public class ModelLessonDetail {
 	 */
 	public static String deleteLesson(Database db, String username, int lessonId) {
 		// R6 and R7: the lesson must still exist and must be this Contributor's
-		Lesson lesson = lessonFor(db, username, lessonId);
-		if (lesson == null) return NOT_AVAILABLE;
+		LessonsLearned lessonsLearned = lessonFor(db, username, lessonId);
+		if (lessonsLearned == null) return NOT_AVAILABLE;
 
 		// R5: a lesson with any locked field cannot be deleted by its Contributor
-		String problem = LessonValidator.checkCanDelete(lesson);
+		String problem = LessonValidator.checkCanDelete(lessonsLearned);
 		if (!problem.isEmpty()) return problem;
 
 		return db.deleteLesson(lessonId) ? "" : SAVE_FAILED;

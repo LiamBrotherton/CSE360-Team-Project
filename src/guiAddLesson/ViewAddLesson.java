@@ -15,7 +15,7 @@ import guiTools.GuiStyle;
 /*******
  * <p> Title: ViewAddLesson Class. </p>
  *
- * <p> Description: The Java/FX-based Add a Lesson Page.  A Contributor enters a new lesson's core
+ * <p> Description: The Java/FX-based Add a LessonsLearned Page.  A Contributor enters a new lesson's core
  * information here: its title, its category, and its body, which says what was learned.
  *
  * Save checks the information with the rules in ModelAddLesson.  If any of it breaks a rule, the
@@ -101,7 +101,7 @@ public class ViewAddLesson {
 	 * <p> Method: displayAddLesson(Stage ps, User user) </p>
 	 *
 	 * <p> Description: This method is the single entry point from outside this package to cause
-	 * the Add a Lesson page to be displayed.
+	 * the Add a LessonsLearned page to be displayed.
 	 *
 	 * It first sets up the shared attributes so we don't have to pass parameters.  It then checks
 	 * to see if the page has been setup.  If not, it instantiates the class, which initializes all
@@ -124,7 +124,7 @@ public class ViewAddLesson {
 		if (theView == null) theView = new ViewAddLesson();
 
 		// Set the title for the window and display the page
-		theStage.setTitle("CSE 360 Foundation Code: Add a Lesson");
+		theStage.setTitle("CSE 360 Foundation Code: Add a LessonsLearned");
 		theStage.setScene(theAddLessonScene);
 		theStage.show();
 

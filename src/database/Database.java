@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import entityClasses.User;
 
 /*******
@@ -1422,28 +1422,28 @@ public class Database {
 	
 	
 	/*******
-	 * <p> Method: LessonList getAllLessons() </p>
+	 * <p> Method: LessonsLearnedList getAllLessons() </p>
 	 * 
 	 * <p> Description: Read every lesson in the database, in the order they were added.</p>
 	 * 
-	 * @return a LessonList holding all lessons
+	 * @return a LessonsLearnedList holding all lessons
 	 * 
 	 */
-	public LessonList getAllLessons() {
-		List<Lesson> lessons = new ArrayList<Lesson>();
+	public LessonsLearnedList getAllLessons() {
+		List<LessonsLearned> lessonsLearneds = new ArrayList<LessonsLearned>();
 		String query = "SELECT * FROM lessonDB ORDER BY id ASC";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			ResultSet rs = pstmt.executeQuery();
-			while (rs.next()) lessons.add(lessonFromRow(rs));
+			while (rs.next()) lessonsLearneds.add(lessonFromRow(rs));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return new LessonList(lessons);
+		return new LessonsLearnedList(lessonsLearneds);
 	}
 	
 	
 	/*******
-	 * <p> Method: LessonList getLessonsAddedBy(String username) </p>
+	 * <p> Method: LessonsLearnedList getLessonsAddedBy(String username) </p>
 	 *
 	 * <p> Description: Read the lessons one Contributor added, in the order they were added.  A
 	 * lesson saved without an author belongs to no one and is never returned.  This is the list
@@ -1451,26 +1451,26 @@ public class Database {
 	 *
 	 * @param username specifies the Contributor whose lessons are wanted
 	 *
-	 * @return a LessonList of that Contributor's lessons, empty if there are none
+	 * @return a LessonsLearnedList of that Contributor's lessons, empty if there are none
 	 *
 	 */
-	public LessonList getLessonsAddedBy(String username) {
-		List<Lesson> lessons = new ArrayList<Lesson>();
-		if (username == null) return new LessonList(lessons);
+	public LessonsLearnedList getLessonsAddedBy(String username) {
+		List<LessonsLearned> lessonsLearneds = new ArrayList<LessonsLearned>();
+		if (username == null) return new LessonsLearnedList(lessonsLearneds);
 		String query = "SELECT * FROM lessonDB WHERE addedBy = ? ORDER BY id ASC";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, username);
 			ResultSet rs = pstmt.executeQuery();
-			while (rs.next()) lessons.add(lessonFromRow(rs));
+			while (rs.next()) lessonsLearneds.add(lessonFromRow(rs));
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return new LessonList(lessons);
+		return new LessonsLearnedList(lessonsLearneds);
 	}
 
 
 	/*******
-	 * <p> Method: Lesson getLessonById(int lessonId) </p>
+	 * <p> Method: LessonsLearned getLessonById(int lessonId) </p>
 	 * 
 	 * <p> Description: Read one lesson, with its locked flags and experience information.</p>
 	 * 
@@ -1479,7 +1479,7 @@ public class Database {
 	 * @return the lesson, or null if there is no lesson with that ID
 	 * 
 	 */
-	public Lesson getLessonById(int lessonId) {
+	public LessonsLearned getLessonById(int lessonId) {
 		String query = "SELECT * FROM lessonDB WHERE id = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setInt(1, lessonId);
@@ -1566,7 +1566,7 @@ public class Database {
 	 * 
 	 * @param lessonId specifies the lesson to change
 	 * 
-	 * @param field specifies Lesson.FIELD_TITLE, Lesson.FIELD_BODY, or Lesson.FIELD_CATEGORY
+	 * @param field specifies LessonsLearned.FIELD_TITLE, LessonsLearned.FIELD_BODY, or LessonsLearned.FIELD_CATEGORY
 	 * 
 	 * @param locked specifies true to lock the field, false to unlock it
 	 * 
@@ -1575,9 +1575,9 @@ public class Database {
 	 */
 	public boolean setLessonFieldLocked(int lessonId, String field, boolean locked) {
 		String column;
-		if (Lesson.FIELD_TITLE.equals(field)) column = "titleLocked";
-		else if (Lesson.FIELD_BODY.equals(field)) column = "bodyLocked";
-		else if (Lesson.FIELD_CATEGORY.equals(field)) column = "categoryLocked";
+		if (LessonsLearned.FIELD_TITLE.equals(field)) column = "titleLocked";
+		else if (LessonsLearned.FIELD_BODY.equals(field)) column = "bodyLocked";
+		else if (LessonsLearned.FIELD_CATEGORY.equals(field)) column = "categoryLocked";
 		else return false;
 		
 		String update = "UPDATE lessonDB SET " + column + " = ? WHERE id = ?";
@@ -1710,9 +1710,9 @@ public class Database {
 	}
 	
 	
-	// Builds a Lesson from the current row of a SELECT * FROM lessonDB
-	private Lesson lessonFromRow(ResultSet rs) throws SQLException {
-		return new Lesson(rs.getInt("id"), rs.getString("title"), rs.getString("body"),
+	// Builds a LessonsLearned from the current row of a SELECT * FROM lessonDB
+	private LessonsLearned lessonFromRow(ResultSet rs) throws SQLException {
+		return new LessonsLearned(rs.getInt("id"), rs.getString("title"), rs.getString("body"),
 				rs.getString("category"), rs.getBoolean("titleLocked"), 
 				rs.getBoolean("bodyLocked"), rs.getBoolean("categoryLocked"),
 				rs.getString("expWhatWasDone"), rs.getString("expHowItWasDone"),

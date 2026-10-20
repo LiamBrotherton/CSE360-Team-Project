@@ -1,7 +1,7 @@
 package guiAddExperience;
 
 import database.Database;
-import entityClasses.Lesson;
+import entityClasses.LessonsLearned;
 import inputRecognizer.LessonValidator;
 
 /*******
@@ -57,7 +57,7 @@ public class ModelAddExperience {
         if (!error.isEmpty()) return error;
 
         int id = Integer.parseInt(lessonId.trim());
-        Lesson lesson = db.getLessonById(id);
+        LessonsLearned lesson = db.getLessonById(id);
         error = LessonValidator.checkLessonFound(lesson, id);
         if (!error.isEmpty()) return error;
 

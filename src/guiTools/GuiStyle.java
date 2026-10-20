@@ -56,7 +56,7 @@ import javafx.scene.text.FontWeight;
  * 							heights, the home page header bar, feature cards, the quiet Quit button,
  * 							the logo for dark backgrounds, and the Coming Soon icon.
  * @version 1.20		2026-10-20 Added styleTextArea, styleList, and styleErrorLabel for the
- * 							Contributor's My lessons, Add a lesson, and Lesson details pages.
+ * 							Contributor's My lessons, Add a lesson, and LessonsLearned details pages.
  */
 
 public class GuiStyle {

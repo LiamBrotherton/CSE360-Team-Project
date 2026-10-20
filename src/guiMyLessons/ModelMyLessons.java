@@ -1,8 +1,8 @@
 package guiMyLessons;
 
 import database.Database;
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 
 /*******
  * <p> Title: ModelMyLessons Class. </p>
@@ -37,7 +37,7 @@ public class ModelMyLessons {
 	}
 
 	/**********
-	 * <p> Method: LessonList lessonsFor(Database db, String username) </p>
+	 * <p> Method: LessonsLearnedList lessonsFor(Database db, String username) </p>
 	 *
 	 * <p> Description: Gets the lessons a Contributor added, in the order they were added (R2).
 	 * Only lessons recorded with this Contributor as the author are returned, so another
@@ -49,30 +49,30 @@ public class ModelMyLessons {
 	 *
 	 * @return that Contributor's lessons, which may be empty but is never null
 	 */
-	public static LessonList lessonsFor(Database db, String username) {
+	public static LessonsLearnedList lessonsFor(Database db, String username) {
 		return db.getLessonsAddedBy(username);
 	}
 
 	/**********
-	 * <p> Method: String rowText(Lesson lesson) </p>
+	 * <p> Method: String rowText(LessonsLearned lesson) </p>
 	 *
 	 * <p> Description: Builds the line the list shows for one lesson: its title, its category
 	 * in parentheses, and, when another role has locked any of its fields, how many (R3).  The
 	 * wording is plain text, "1 field locked" or "2 fields locked", so it reads the same on every
 	 * screen.  An unlocked lesson's line says nothing about locks. </p>
 	 *
-	 * @param lesson	the lesson to describe
+	 * @param lessonsLearned	the lesson to describe
 	 *
 	 * @return the text for that lesson's row in the list
 	 */
-	public static String rowText(Lesson lesson) {
-		String text = lesson.getTitle() + "  (" + lesson.getCategory() + ")";
+	public static String rowText(LessonsLearned lessonsLearned) {
+		String text = lessonsLearned.getTitle() + "  (" + lessonsLearned.getCategory() + ")";
 
 		// R3: count the locked core fields so the Contributor can see which lessons are locked
 		int locked = 0;
-		if (lesson.getTitleLocked()) locked++;
-		if (lesson.getCategoryLocked()) locked++;
-		if (lesson.getBodyLocked()) locked++;
+		if (lessonsLearned.getTitleLocked()) locked++;
+		if (lessonsLearned.getCategoryLocked()) locked++;
+		if (lessonsLearned.getBodyLocked()) locked++;
 		if (locked == 1) text += "  -  1 field locked";
 		else if (locked > 1) text += "  -  " + locked + " fields locked";
 		return text;

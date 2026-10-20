@@ -3,8 +3,8 @@ package applicationMain;
 import java.util.Scanner;
 
 import database.Database;
-import entityClasses.Lesson;
-import entityClasses.LessonList;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import inputRecognizer.LessonValidator;
 
 /**
@@ -86,9 +86,9 @@ public class LessonConsole {
 	 * 
 	 * @param in The Scanner object for reading input.
 	 * @param db The database instance to query.
-	 * @return   The retrieved Lesson object, or null if validation fails.
+	 * @return   The retrieved LessonsLearned object, or null if validation fails.
 	 */
-	private static Lesson askForLesson(Scanner in, Database db) {
+	private static LessonsLearned askForLesson(Scanner in, Database db) {
 		String idText = ask(in, "Enter lesson ID: ");
 		if (idText == null) return null;
 		
@@ -97,12 +97,12 @@ public class LessonConsole {
 		if (!err.isEmpty()) { System.out.println(err); return null; }
 		
 		int id = Integer.parseInt(idText.trim());
-		Lesson lesson = db.getLessonById(id);
+		LessonsLearned lessonsLearned = db.getLessonById(id);
 		
 		// Verify the lesson actually exists in the database
-		err = LessonValidator.checkLessonFound(lesson, id);
+		err = LessonValidator.checkLessonFound(lessonsLearned, id);
 		if (!err.isEmpty()) { System.out.println(err); return null; }
-		return lesson;
+		return lessonsLearned;
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class LessonConsole {
 
 		int id = db.addLesson(title, body, category);
 		if (id < 0) System.out.println("The lesson could not be saved.");
-		else System.out.println("Lesson saved to database with ID " + id);
+		else System.out.println("LessonsLearned saved to database with ID " + id);
 	}
 
 	/**
@@ -146,11 +146,11 @@ public class LessonConsole {
 	 * @param db The database instance to query.
 	 */
 	private static void viewAll(Database db) {
-		LessonList list = db.getAllLessons();
+		LessonsLearnedList list = db.getAllLessons();
 		if (list.isEmpty()) { System.out.println(list.getMessage()); return; }
 		
 		System.out.println(list.size() + " lesson(s):");
-		for (Lesson l : list.getLessons()) {
+		for (LessonsLearned l : list.getLessons()) {
 			System.out.println("  [" + l.getId() + "] " + l.getTitle() + "  (" + l.getCategory() + ")"
 					+ (l.hasLockedField() ? "  [has locked field]" : "")
 					+ (l.hasExperienceInformation() ? "  [has experience]" : ""));
@@ -164,8 +164,8 @@ public class LessonConsole {
 	 * @param db The database instance to query.
 	 */
 	private static void examine(Scanner in, Database db) {
-		Lesson lesson = askForLesson(in, db);
-		if (lesson != null) System.out.println(lesson);
+		LessonsLearned lessonsLearned = askForLesson(in, db);
+		if (lessonsLearned != null) System.out.println(lessonsLearned);
 	}
 
 	/**
@@ -175,34 +175,34 @@ public class LessonConsole {
 	 * @param db The database instance containing the lesson.
 	 */
 	private static void update(Scanner in, Database db) {
-		Lesson lesson = askForLesson(in, db);
-		if (lesson == null) return;
+		LessonsLearned lessonsLearned = askForLesson(in, db);
+		if (lessonsLearned == null) return;
 		
 		String field = askForField(in);
 		if (field == null) return;
 
 		// Ensure the field is allowed to be modified
-		String err = LessonValidator.checkFieldNotLocked(lesson, field);
+		String err = LessonValidator.checkFieldNotLocked(lessonsLearned, field);
 		if (!err.isEmpty()) { System.out.println(err); return; }
 
 		String value = ask(in, "Enter new " + field + ": ");
 		if (value == null) return;
 
 		boolean ok;
-		if (Lesson.FIELD_TITLE.equals(field)) {
+		if (LessonsLearned.FIELD_TITLE.equals(field)) {
 			err = LessonValidator.checkTitle(value);
 			if (!err.isEmpty()) { System.out.println(err); return; }
-			ok = db.updateLessonTitle(lesson.getId(), value);
-		} else if (Lesson.FIELD_BODY.equals(field)) {
+			ok = db.updateLessonTitle(lessonsLearned.getId(), value);
+		} else if (LessonsLearned.FIELD_BODY.equals(field)) {
 			err = LessonValidator.checkBody(value);
 			if (!err.isEmpty()) { System.out.println(err); return; }
-			ok = db.updateLessonBody(lesson.getId(), value);
+			ok = db.updateLessonBody(lessonsLearned.getId(), value);
 		} else {
 			err = LessonValidator.checkCategory(value);
 			if (!err.isEmpty()) { System.out.println(err); return; }
-			ok = db.updateLessonCategory(lesson.getId(), value);
+			ok = db.updateLessonCategory(lessonsLearned.getId(), value);
 		}
-		System.out.println(ok ? "Lesson updated!" : "The lesson could not be updated.");
+		System.out.println(ok ? "LessonsLearned updated!" : "The lesson could not be updated.");
 	}
 
 	/**
@@ -212,8 +212,8 @@ public class LessonConsole {
 	 * @param db The database instance containing the lesson.
 	 */
 	private static void addExperience(Scanner in, Database db) {
-		Lesson lesson = askForLesson(in, db);
-		if (lesson == null) return;
+		LessonsLearned lessonsLearned = askForLesson(in, db);
+		if (lessonsLearned == null) return;
 		
 		String what = ask(in, "What was done: ");
 		String how = ask(in, "How it was done: ");
@@ -227,7 +227,7 @@ public class LessonConsole {
 		if (err.isEmpty()) err = LessonValidator.checkEffort(effort);
 		if (!err.isEmpty()) { System.out.println(err); return; }
 
-		boolean ok = db.addExperienceInformation(lesson.getId(), what, how, duration.trim(),
+		boolean ok = db.addExperienceInformation(lessonsLearned.getId(), what, how, duration.trim(),
 				effort.trim());
 		System.out.println(ok ? "Experience information saved!"
 				: "The experience information could not be saved.");
@@ -240,8 +240,8 @@ public class LessonConsole {
 	 * @param db The database instance containing the lesson.
 	 */
 	private static void lockUnlock(Scanner in, Database db) {
-		Lesson lesson = askForLesson(in, db);
-		if (lesson == null) return;
+		LessonsLearned lessonsLearned = askForLesson(in, db);
+		if (lessonsLearned == null) return;
 		
 		String field = askForField(in);
 		if (field == null) return;
@@ -252,7 +252,7 @@ public class LessonConsole {
 		// If input starts with 'l', set boolean to true (lock), otherwise false (unlock)
 		boolean lock = which.trim().toLowerCase().startsWith("l");
 
-		boolean ok = db.setLessonFieldLocked(lesson.getId(), field, lock);
+		boolean ok = db.setLessonFieldLocked(lessonsLearned.getId(), field, lock);
 		if (ok) System.out.println("The " + field + " is now " + (lock ? "locked." : "unlocked."));
 		else System.out.println("\"" + field + "\" is not a lockable field.  Use title, body, or category.");
 	}
@@ -264,14 +264,14 @@ public class LessonConsole {
 	 * @param db The database instance containing the lesson.
 	 */
 	private static void delete(Scanner in, Database db) {
-		Lesson lesson = askForLesson(in, db);
-		if (lesson == null) return;
+		LessonsLearned lessonsLearned = askForLesson(in, db);
+		if (lessonsLearned == null) return;
 		
 		// Check business rules to ensure the lesson is allowed to be deleted
-		String err = LessonValidator.checkCanDelete(lesson);
+		String err = LessonValidator.checkCanDelete(lessonsLearned);
 		if (!err.isEmpty()) { System.out.println(err); return; }
 		
-		System.out.println(db.deleteLesson(lesson.getId()) ? "Lesson deleted!"
+		System.out.println(db.deleteLesson(lessonsLearned.getId()) ? "LessonsLearned deleted!"
 				: "The lesson could not be deleted.");
 	}
 }
