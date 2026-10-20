@@ -90,7 +90,7 @@ public class ControllerContributorHome {
 				ViewContributorHome.theStage, ViewContributorHome.theUser);
 	}
 
-	}
+	
 
 	/**********
 	 * <p> Method: performLogout() </p>
