@@ -1,5 +1,6 @@
 package guiContributor;
 
+import entityClasses.LessonList;
 
 /*******
  * <p> Title: ControllerContributorHome Class. </p>
@@ -65,18 +66,25 @@ public class ControllerContributorHome {
 				ViewContributorHome.theUser, "Add a lesson");
 	}
 
+
 	/**********
 	 * <p> Method: performMyLessons() </p>
-	 *
-	 * <p> Description: This method directs the user to the Coming Soon page for the list of the
-	 * lessons this Contributor has added.  It is a placeholder until the My Lessons page has been
-	 * built. </p>
-	 *
+	 * 
+	 * <p> Description: This method retrieves the lessons belonging to the Contributor who is currently signed in.
+	 * It then passes the lessons to the View counterpart for display. The lessons being displayed must have been
+	 * created by the current Contributor. </p>
+	 * 
 	 */
-	protected static void performMyLessons () {
-		guiComingSoon.ViewComingSoon.displayComingSoon(ViewContributorHome.theStage,
-				ViewContributorHome.theUser, "My lessons");
+	protected static void performMyLessons() {
+
+		String username = ViewContributorHome.theUser.getUserName();
+
+		LessonList lessons = applicationMain.FoundationsMain.database.getLessonsForContributor(username);
+
+		ViewContributorHome.displayMyLessons(lessons);
+
 	}
+
 
 	/**********
 	 * <p> Method: performAddExperience() </p>

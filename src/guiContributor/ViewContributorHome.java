@@ -1,12 +1,16 @@
 package guiContributor;
 
+
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
 import database.Database;
 import entityClasses.User;
+import entityClasses.Lesson;
+import entityClasses.LessonList;
 import guiTools.GuiStyle;
 
 
@@ -140,6 +144,49 @@ public class ViewContributorHome {
 		GuiStyle.startUnfocused(theRootPane);				// No header button looks pressed on arrival
 	}
 	
+
+	/**
+	 * <p> Method: displayMyLessons(LessonList lessons) </p>
+	 * 
+	 * <p> Description: Displays the lessons provided by its accompanying controller method, which narrowed 
+	 * the scope to lessons only created by the current contributor. </p> 
+	 * 
+	 * @param lessons :the current Contributor's lessons
+	 * 
+	 */
+	protected static void displayMyLessons(LessonList lessons) {
+		Alert alert = new Alert(Alert.AlertType.INFORMATION);
+		
+		alert.initOwner(theStage);
+		alert.setTitle("My Lessons");
+		alert.setHeaderText(theUser.getUserName() + "'s Lessons:");
+		
+		StringBuilder lessonDetails = new StringBuilder();
+		
+		if (lessons == null || lessons.isEmpty()) {
+			lessonDetails.append("You have not submitted any lessons yet.");
+		} 
+		
+		else{
+			
+			for (Lesson lesson : lessons.getLessons()) {
+				lessonDetails.append("Lesson ID: ")
+					.append(lesson.getId())
+					.append("\nTitle: ")
+					.append(lesson.getTitle())
+					.append("\nCategory: ")
+					.append(lesson.getCategory())
+					.append("\nLesson Details:\n")
+					.append(lesson.getBody())
+					.append("\n\n------------------------------\n\n");
+			}
+		}
+		
+		alert.setContentText(lessonDetails.toString());
+		alert.getDialogPane().setPrefWidth(600);
+		alert.showAndWait();
+	}
+
 	/**********
 	 * <p> Method: ViewContributorHome() </p>
 	 * 
