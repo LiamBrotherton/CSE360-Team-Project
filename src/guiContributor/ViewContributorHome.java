@@ -52,6 +52,9 @@ public class ViewContributorHome {
 	// This is a separator and it is used to partition the GUI for various tasks
 	protected static Line line_Separator1 = new Line(20, 95, width-20, 95);
 
+	// Contributor Story 3: open the experience information form.
+	protected static Button button_AddExperience = new Button("Add Experience Information");
+	
 	// GUI ARea 2: This is a stub, so there are no widgets here.  For an actual role page, this are
 	// would contain the widgets needed for the user to play the assigned role.
 	
@@ -164,8 +167,10 @@ public class ViewContributorHome {
 		button_UpdateThisUser.setOnAction((_) -> {ControllerContributorHome.performUpdate(); });
 		
 		// GUI Area 2
+		setupButtonUI(button_AddExperience, "Dialog", 18, 270, Pos.CENTER, 20, 130);
+		button_AddExperience.setOnAction((_) -> {ControllerContributorHome.performAddExperience(); });
 		
-			// This is a stub, so this area is empty
+			// Other Contributor User Story pages will be added here.
 		
 		
 		// GUI Area 3
@@ -180,7 +185,7 @@ public class ViewContributorHome {
 		// Place all of the widget items into the Root Pane's list of children
          theRootPane.getChildren().addAll(
 			label_PageTitle, label_UserDetails, button_UpdateThisUser, line_Separator1,
-	        line_Separator4, button_Logout, button_Quit);
+	        button_AddExperience, line_Separator4, button_Logout, button_Quit);
 }
 	
 	

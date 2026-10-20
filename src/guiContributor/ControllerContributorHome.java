@@ -51,6 +51,17 @@ public class ControllerContributorHome {
 	}	
 
 	/**********
+	 * <p> Method: performAddExperience() </p>
+	 *
+	 * <p> Opens the Contributor page used to add experience information to
+	 * an existing lesson.</p>
+	 */
+	protected static void performAddExperience() {
+		guiAddExperience.ViewAddExperience.displayAddExperience(
+				ViewContributorHome.theStage, ViewContributorHome.theUser);
+	}
+
+	/**********
 	 * <p> Method: performLogout() </p>
 	 * 
 	 * <p> Description: This method logs out the current user and proceeds to the normal login
