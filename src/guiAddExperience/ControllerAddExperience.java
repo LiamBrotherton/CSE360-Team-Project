@@ -7,27 +7,53 @@ import entityClasses.LessonsLearned;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
-/*******
- * <p> Title: ControllerAddExperience Class. </p>
- *
- * <p> Description: Handles the Add Experience Information page actions. The
- * View collects input, the Model validates it, and the Database saves it.</p>
+/**
+ * <p>Title: ControllerAddExperience Class.</p>
+ * <p>Handles loading and saving experience for Contributor Story 3, including
+ * permission checks and confirmation before replacing previously saved data.</p>
  *
  * @author Hassan Mohamed
- * @version 1.00 2026-10-20 Initial version for TP2 Contributor Story 3
+ * @version 1.11 2026-10-20 Corrected LessonsLearned type and compilation errors
  */
 public class ControllerAddExperience {
 
     private ControllerAddExperience() { }
 
-    /*******
-     * <p> Validates fields and saves experience information to a lesson.</p>
-     * <p> An existing experience entry must be confirmed before replacement.</p>
-     */
+    /** Loads the contributor-owned lesson selected in the dropdown. */
+    protected static void performLoad() {
+        if (!contributorSignedIn()) return;
+
+        LessonsLearned chosen = ViewAddExperience.combo_Lessons.getValue();
+        if (chosen == null) {
+            ViewAddExperience.label_Status.setText("Choose a lesson first.");
+            return;
+        }
+        String idText = Integer.toString(chosen.getId());
+        String error = inputRecognizer.LessonValidator.checkLessonIdText(idText);
+        if (!error.isEmpty()) {
+            ViewAddExperience.label_Status.setText(error);
+            return;
+        }
+
+        int id = Integer.parseInt(idText.trim());
+        Database db = applicationMain.FoundationsMain.database;
+        LessonsLearned lesson = ModelAddExperience.lessonFor(
+                db, ViewAddExperience.theUser.getUserName(), id);
+
+        if (lesson == null) {
+            ViewAddExperience.label_Status.setText(ModelAddExperience.NOT_AVAILABLE);
+            ViewAddExperience.clearExperienceFields();
+            return;
+        }
+        ViewAddExperience.loadLesson(lesson);
+    }
+
+    /** Validates and saves experience information for a contributor-owned lesson. */
     protected static void performSave() {
-        if (ViewAddExperience.theUser == null
-                || !ViewAddExperience.theUser.getContributorRole()) {
-            ViewAddExperience.label_Status.setText("Contributor permission is required.");
+        if (!contributorSignedIn()) return;
+        LessonsLearned chosen = ViewAddExperience.combo_Lessons.getValue();
+        if (chosen == null || ViewAddExperience.theLessonId != chosen.getId()) {
+            ViewAddExperience.label_Status.setText("Select a lesson and click Load lesson first.");
             return;
         }
 
@@ -45,32 +71,62 @@ public class ControllerAddExperience {
 
         Database db = applicationMain.FoundationsMain.database;
         int id = Integer.parseInt(idText.trim());
-        LessonsLearned lesson = db.getLessonById(id);
+        LessonsLearned lesson = ModelAddExperience.lessonFor(
+                db, ViewAddExperience.theUser.getUserName(), id);
         if (lesson == null) {
-            ViewAddExperience.label_Status.setText("Lesson " + id + " was not found.");
+            ViewAddExperience.label_Status.setText(ModelAddExperience.NOT_AVAILABLE);
             return;
         }
 
-        // Database currently supports a single experience entry for each lesson.
+        // The database stores one experience record per lesson.
         if (lesson.hasExperienceInformation()) {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Replace Experience Information");
-            confirm.setHeaderText("Lesson " + id + " already contains experience information.");
-            confirm.setContentText("Saving will replace its existing experience information. Continue?");
+            confirm.setTitle("Replace experience information");
+            confirm.setHeaderText("This lesson already has experience information.");
+            confirm.setContentText("Saving will replace the existing experience. Continue?");
             Optional<ButtonType> answer = confirm.showAndWait();
             if (!answer.isPresent() || answer.get() != ButtonType.OK) return;
         }
 
-        error = ModelAddExperience.save(db, idText, what, how, duration, effort);
-        ViewAddExperience.label_Status.setText(
-                error.isEmpty() ? "Experience information saved for lesson " + id + "." : error);
+        error = ModelAddExperience.save(
+                db, ViewAddExperience.theUser.getUserName(),
+                idText, what, how, duration, effort);
+        if (!error.isEmpty()) {
+            ViewAddExperience.label_Status.setText(error);
+            return;
+        }
+
+        // Read it back from the database to show the values actually stored.
+        LessonsLearned saved = ModelAddExperience.lessonFor(
+                db, ViewAddExperience.theUser.getUserName(), id);
+        if (saved == null) {
+            ViewAddExperience.label_Status.setText(ModelAddExperience.NOT_AVAILABLE);
+        } else {
+            ViewAddExperience.loadLesson(saved);
+            ViewAddExperience.label_Status.setText(
+                    "Experience saved. These are the stored values.");
+        }
     }
 
-    /*******
-     * <p> Returns to the Contributor Home Page with the same user and Stage.</p>
-     */
+    /** Returns to Lesson Details if a lesson was selected; otherwise My Lessons. */
     protected static void performReturn() {
-        guiContributor.ViewContributorHome.displayContributorHome(
-                ViewAddExperience.theStage, ViewAddExperience.theUser);
+        if (ViewAddExperience.theLessonId > 0) {
+            guiLessonDetail.ViewLessonDetail.displayLessonDetail(
+                    ViewAddExperience.theStage,
+                    ViewAddExperience.theUser,
+                    ViewAddExperience.theLessonId);
+        } else {
+            guiMyLessons.ViewMyLessons.displayMyLessons(
+                    ViewAddExperience.theStage,
+                    ViewAddExperience.theUser);
+        }
+    }
+
+    /** Checks the signed-in user's Contributor role. */
+    private static boolean contributorSignedIn() {
+        if (ViewAddExperience.theUser != null
+                && ViewAddExperience.theUser.getContributorRole()) return true;
+        ViewAddExperience.label_Status.setText("Contributor permission is required.");
+        return false;
     }
 }
