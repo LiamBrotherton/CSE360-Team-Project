@@ -12,6 +12,7 @@ import java.util.UUID;
 import entityClasses.LessonsLearned;
 import entityClasses.LessonsLearnedList;
 import entityClasses.User;
+import inputRecognizer.LessonValidator;
 
 /*******
  * <p> Title: Database Class. </p>
@@ -1717,6 +1718,238 @@ public class Database {
 				rs.getBoolean("bodyLocked"), rs.getBoolean("categoryLocked"),
 				rs.getString("expWhatWasDone"), rs.getString("expHowItWasDone"),
 				rs.getString("expDuration"), rs.getString("expEffort"), rs.getString("addedBy"));
+	}
+	
+
+	/**
+	 * Creates a lesson owned by a specified contributor.
+	 *
+	 * @param title :the lesson's title
+	 * @param body :the lesson's body
+	 * @param category :the lesson's category
+	 * @param ownerUsername :the username of the contributor who made the lesson
+	 * @return the new lesson ID, or the number negative one if something fails
+	 */
+	public int addLessonForContributor(String title, String body, String category, String ownerUsername) {
+
+		if (ownerUsername == null || ownerUsername.trim().isEmpty()) {
+			return -1;
+		}
+		
+		if (!LessonValidator.checkTitle(title).isEmpty() || !LessonValidator.checkBody(body).isEmpty() || !LessonValidator.checkCategory(category).isEmpty()) {
+			return -1;
+		}
+
+		String insert = "INSERT INTO lessonDB " + "(title, body, category, addedBy) VALUES (?, ?, ?, ?)";
+
+		try (PreparedStatement pstmt = connection.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)) {
+
+			pstmt.setString(1, title);
+			pstmt.setString(2, body);
+			pstmt.setString(3, category);
+			pstmt.setString(4, ownerUsername);
+			pstmt.executeUpdate();
+
+			try (ResultSet keys = pstmt.getGeneratedKeys()) {
+				if (keys.next()) {
+					return keys.getInt(1);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return -1;
+	}
+
+	/**
+	 * Retrieves lessons submitted by a contributor. Only works if they created it.
+	 *
+	 * @param ownerUsername : the contributor whose lessons are requested
+	 * @return a list containing only the requesting contributor's lessons
+	 */
+	public LessonsLearnedList getLessonsForContributor(String ownerUsername) {
+		List<LessonsLearned> lessons = new ArrayList<LessonsLearned>();
+
+		if (ownerUsername == null || ownerUsername.trim().isEmpty()) {
+			return new LessonsLearnedList(lessons);
+		}
+
+		String query = "SELECT * FROM lessonDB " + "WHERE addedBy = ? ORDER BY id ASC";
+
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, ownerUsername);
+
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					lessons.add(lessonFromRow(rs));
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return new LessonsLearnedList(lessons);
+	}
+
+	/**
+	 * Retrieves a specific lesson by id, only if the requesting contributor owns it.
+	 *
+	 * @param lessonId :the lesson ID
+	 * @param ownerUsername :the requesting contributor's username
+	 * @return the lesson if owned by the contributor, or null if something fails
+	 */
+	public LessonsLearned getLessonForContributor(int lessonId, String ownerUsername) {
+		if (ownerUsername == null || ownerUsername.trim().isEmpty()) {
+			return null;
+		}
+
+		String query = "SELECT * FROM lessonDB " + "WHERE id = ? AND addedBy = ?";
+
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setInt(1, lessonId);
+			pstmt.setString(2, ownerUsername);
+
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if (rs.next()) {
+					return lessonFromRow(rs);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	
+		return null;
+	}
+
+	/**
+	 * Updates an unlocked field of a lesson if requested by the contributor who owns it.
+	 *
+	 * @param lessonId :the lesson ID
+	 * @param ownerUsername :the requesting contributor
+	 * @param field :the field to update
+	 * @param value :the proposed new value
+	 * @return true if the update succeeds, or false if something fails
+	 */
+	private boolean updateContributorLessonField(int lessonId, String ownerUsername, String field, String value) {
+		if (ownerUsername == null || ownerUsername.trim().isEmpty()) {
+			return false;
+		}
+
+		LessonsLearned lesson = getLessonForContributor(lessonId, ownerUsername);
+
+		if (lesson == null){
+			return false;
+		}
+
+		String type;
+		String lockType;
+		String validation;
+
+		if (LessonsLearned.FIELD_TITLE.equals(field)) {
+			type = "title";
+			lockType = "titleLocked";
+			validation = LessonValidator.checkTitle(value);
+		} else if (LessonsLearned.FIELD_BODY.equals(field)) {
+			type = "body";
+			lockType = "bodyLocked";
+			validation = LessonValidator.checkBody(value);
+		} else if (LessonsLearned.FIELD_CATEGORY.equals(field)) {
+			type = "category";
+			lockType = "categoryLocked";
+			validation = LessonValidator.checkCategory(value);
+		} else {
+			return false;
+		}
+
+		if (!validation.isEmpty()){
+			return false;
+		}
+
+		if (!LessonValidator.checkFieldNotLocked(lesson, field).isEmpty()) {
+			return false;
+		}
+
+		String update = "UPDATE lessonDB SET " + type + " = ? " + "WHERE id = ? AND addedBy = ? AND " + lockType + " = FALSE";
+
+		try (PreparedStatement pstmt = connection.prepareStatement(update)) {
+			pstmt.setString(1, value);
+			pstmt.setInt(2, lessonId);
+			pstmt.setString(3, ownerUsername);
+
+			return pstmt.executeUpdate() == 1;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	/**
+	 * Updates a lesson's title if the contributor owns the lesson.
+	 *
+	 * @param lessonId :the lesson ID
+	 * @param ownerUsername :the contributor's username
+	 * @param title :the proposed title
+	 * @return true if the update succeeds and false if not
+	 */
+	public boolean updateContributorLessonTitle(int lessonId, String ownerUsername, String title) {
+		return updateContributorLessonField(lessonId, ownerUsername, LessonsLearned.FIELD_TITLE, title);
+	}
+
+	/**
+	 * Updates a lesson's body if the contributor owns the lesson.
+	 *
+	 * @param lessonId :the lesson ID
+	 * @param ownerUsername the contributor's username
+	 * @param body :the proposed body
+	 * @return true if the update succeeds and false if not
+	 */
+	public boolean updateContributorLessonBody(int lessonId, String ownerUsername, String body) {
+		return updateContributorLessonField(lessonId, ownerUsername, LessonsLearned.FIELD_BODY, body);
+	}
+
+	/**
+	 * Updates a lesson's category if the contributor owns the lesson.
+	 *
+	 * @param lessonId :the lesson ID
+	 * @param ownerUsername :the contributor's username
+	 * @param category :the proposed category
+	 * @return true if the update succeeds and false if not
+	 */
+	public boolean updateContributorLessonCategory(int lessonId, String ownerUsername, String category) {
+		return updateContributorLessonField(lessonId, ownerUsername, LessonsLearned.FIELD_CATEGORY, category);
+	}
+
+	/**
+	 * Deletes an unlocked lesson only when the contributor owns it.
+	 *
+	 * @param lessonId :the lesson ID
+	 * @param ownerUsername :the requesting contributor
+	 * @return true if deletion succeeds and false if not
+	 */
+	public boolean deleteLessonForContributor(int lessonId, String ownerUsername) {
+
+		LessonsLearned lesson = getLessonForContributor(lessonId, ownerUsername);
+
+		if (lesson == null){
+			return false;
+		}
+
+		if (!LessonValidator.checkCanDelete(lesson).isEmpty()){
+			return false;
+		}
+
+		String delete = "DELETE FROM lessonDB " + "WHERE id = ? AND addedBy = ?";
+
+		try (PreparedStatement pstmt = connection.prepareStatement(delete)) {
+			pstmt.setInt(1, lessonId);
+			pstmt.setString(2, ownerUsername);
+
+			return pstmt.executeUpdate() == 1;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	
