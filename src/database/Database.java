@@ -94,7 +94,7 @@ public class Database {
 			connection = DriverManager.getConnection(DB_URL, USER, PASS);
 			statement = connection.createStatement(); 
 			// You can use this command to clear the database and restart from fresh.
-			//statement.execute("DROP ALL OBJECTS");
+			// statement.execute("DROP ALL OBJECTS");
 
 			createTables();  // Create the necessary tables if they don't exist
 		} catch (ClassNotFoundException e) {
@@ -149,7 +149,8 @@ public class Database {
 	    		+ "expWhatWasDone VARCHAR(2000), "
 	    		+ "expHowItWasDone VARCHAR(2000), "
 	    		+ "expDuration VARCHAR(255), "
-	    		+ "expEffort VARCHAR(255))";
+	    		+ "expEffort VARCHAR(255), " // Added a comma here
+	    		+ "username VARCHAR(255))";   // <--- ADD THIS COLUMN
 	    statement.execute(lessonTable);
 	}
 
@@ -1663,15 +1664,13 @@ public class Database {
 	public List<Lesson> getLessonsByContributor(String contributorName) {
 		List<Lesson> results = new ArrayList<>();
 		
-		// SQL Query to extract columns matching the specific user. 
-		// Change "author" to your precise table column name if necessary (e.g., "username").
-		String query = "SELECT * FROM lessonDB WHERE author = ?";
+		// UPDATE: Replace "author" with your exact database column tracking the owner name
+		String query = "SELECT * FROM lessonDB WHERE username = ?";
 		
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, contributorName);
 			ResultSet rs = pstmt.executeQuery();
 			
-			// Process each matching row using your existing helper method
 			while (rs.next()) {
 				results.add(lessonFromRow(rs));
 			}
@@ -1680,6 +1679,28 @@ public class Database {
 		}
 		
 		return results;
+	}
+	
+	public boolean insertLesson(Lesson lesson, String contributorName) {
+		String sql = "INSERT INTO lessonDB (id, title, body, category, titleLocked, bodyLocked, categoryLocked, expWhatWasDone, expHowItWasDone, expDuration, expEffort, username) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+			pstmt.setInt(1, lesson.getId());
+			pstmt.setString(2, lesson.getTitle());
+			pstmt.setString(3, lesson.getBody());
+			pstmt.setString(4, lesson.getCategory());
+			pstmt.setBoolean(5, lesson.getTitleLocked());
+			pstmt.setBoolean(6, lesson.getBodyLocked());
+			pstmt.setBoolean(7, lesson.getCategoryLocked());
+			pstmt.setString(8, lesson.getWhatWasDone());
+			pstmt.setString(9, lesson.getHowItWasDone());
+			pstmt.setString(10, lesson.getDuration());
+			pstmt.setString(11, lesson.getEffort());
+			pstmt.setString(12, contributorName); // <--- Matches the new column slot
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	/*******
