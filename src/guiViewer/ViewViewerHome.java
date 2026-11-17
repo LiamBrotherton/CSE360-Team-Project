@@ -61,7 +61,7 @@ public class ViewViewerHome {
 
 	// GUI Area 2: One button for each TP2 lesson feature a Viewer will use, each on its own card.
 	// Until a feature is built its button opens the Coming Soon page.
-	/** The button that opens the list of all the lessons (a placeholder for now). */
+	/** The button that opens the list of all the lessons (implemented in the TP3 prototype). */
 	protected static Button button_AllLessons = new Button("All lessons");
 	/** The button that opens the keyword search of the lessons (a placeholder for now). */
 	protected static Button button_SearchLessons = new Button("Search lessons");
