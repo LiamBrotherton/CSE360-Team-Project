@@ -32,8 +32,7 @@ public class ViewerLessonsTest {
     private final List<Integer> createdLessonIds = new ArrayList<>();
 
     /** Unique suffix used to avoid title collisions. */
-    private final String suffix =
-            Long.toString(System.nanoTime());
+    private final String suffix = Long.toString(System.nanoTime());
 
     /**
      * Opens the database before each test.
@@ -74,14 +73,9 @@ public class ViewerLessonsTest {
     private int addTestLesson(
             String title, String body, String category) {
 
-        int id = db.addLesson(
-                title + " " + suffix,
-                body,
-                category,
-                "ViewerTestContributor");
+        int id = db.addLesson(title + " " + suffix, body, category, "ViewerTestContributor");
 
-        assertTrue(id > 0,
-                "The test lesson should be inserted successfully.");
+        assertTrue(id > 0, "The test lesson should be inserted successfully.");
 
         createdLessonIds.add(id);
         return id;
@@ -95,26 +89,21 @@ public class ViewerLessonsTest {
 
         Set<Integer> expectedIds = new HashSet<>();
 
-        for (LessonsLearned lesson :
-                db.getAllLessons().getLessons()) {
+        for (LessonsLearned lesson : db.getAllLessons().getLessons()) {
             expectedIds.add(lesson.getId());
         }
 
-        int firstId = addTestLesson(
-                "Viewer browse one", "First test lesson", "Testing");
+        int firstId = addTestLesson("Viewer browse one", "First test lesson", "Testing");
 
-        int secondId = addTestLesson(
-                "Viewer browse two", "Second test lesson", "Testing");
+        int secondId = addTestLesson("Viewer browse two", "Second test lesson", "Testing");
 
-        int thirdId = addTestLesson(
-                "Viewer browse three", "Third test lesson", "Design");
+        int thirdId = addTestLesson("Viewer browse three", "Third test lesson", "Design");
 
         expectedIds.add(firstId);
         expectedIds.add(secondId);
         expectedIds.add(thirdId);
 
-        LessonsLearnedList actual =
-                ModelViewerLessons.lessonsFor(db);
+        LessonsLearnedList actual = ModelViewerLessons.lessonsFor(db);
 
         List<Integer> actualIds = new ArrayList<>();
 
@@ -128,8 +117,7 @@ public class ViewerLessonsTest {
         assertEquals(expectedIds, new HashSet<>(actualIds),
                 "There should be no missing or unexpected lessons.");
 
-        assertEquals(actualIds.size(),
-                new HashSet<>(actualIds).size(),
+        assertEquals(actualIds.size(), new HashSet<>(actualIds).size(),
                 "The result should not contain duplicate lesson IDs.");
     }
 
@@ -144,24 +132,20 @@ public class ViewerLessonsTest {
                 "A body for the row test",
                 "Architecture");
 
-        LessonsLearnedList lessons =
-                ModelViewerLessons.lessonsFor(db);
+        LessonsLearnedList lessons = ModelViewerLessons.lessonsFor(db);
 
         LessonsLearned inserted = null;
 
         for (LessonsLearned lesson : lessons.getLessons()) {
-            if (lesson.getTitle().equals(
-                    "Viewer row title " + suffix)) {
+            if (lesson.getTitle().equals("Viewer row title " + suffix)) {
                 inserted = lesson;
                 break;
             }
         }
 
-        assertNotNull(inserted,
-                "The inserted lesson should be returned.");
+        assertNotNull(inserted, "The inserted lesson should be returned.");
 
-        assertEquals(
-                "Viewer row title " + suffix + "  (Architecture)",
+        assertEquals("Viewer row title " + suffix + "  (Architecture)",
                 ModelViewerLessons.rowText(inserted));
 
         assertEquals(lessons.size(),
@@ -175,17 +159,13 @@ public class ViewerLessonsTest {
     @Test
     public void testEmptyLessonCollectionProducesNoRows() {
 
-        LessonsLearnedList emptyLessons =
-                new LessonsLearnedList();
+        LessonsLearnedList emptyLessons = new LessonsLearnedList();
 
         assertTrue(emptyLessons.isEmpty());
 
-        assertEquals(0,
-                ModelViewerLessons.rowsFor(emptyLessons).size());
+        assertEquals(0, ModelViewerLessons.rowsFor(emptyLessons).size());
 
-        assertEquals(
-                ModelViewerLessons.EMPTY_MESSAGE,
-                emptyLessons.getMessage());
+        assertEquals(ModelViewerLessons.EMPTY_MESSAGE, emptyLessons.getMessage());
     }
 
     /**
