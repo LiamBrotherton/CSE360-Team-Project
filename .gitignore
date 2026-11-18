@@ -33,3 +33,7 @@ Thumbs.db
 # Gradle (if used)
 .gradle/
 build/
+
+# HW3 submission material (personal, not part of the project)
+HW3/
+HW3.zip
