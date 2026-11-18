@@ -31,6 +31,7 @@ import entityClasses.User;
  * 							Account Update and Logout buttons; a page title with a line below it;
  * 							an information card on the shared grid in place of the empty page; and
  * 							the quiet Quit button in the same corner as on every page.
+ * @version 2.20        2026-11-18 Added the HW3 Manage Locks button (Hassan).
  *
  */
 
@@ -54,11 +55,12 @@ public class ViewCuratorHome {
 	// and a button to allow this user to update the account settings
 	protected static Label label_PageTitle = new Label();
 	protected static Label label_UserDetails = new Label();
-	private static Label label_Subtitle = new Label("Your curator tools will appear here.");
+	private static Label label_Subtitle = new Label("Review and protect lesson content.");
 	protected static Button button_UpdateThisUser = new Button("Account Update");
+	/** Opens the HW3 lesson-lock manager. */
+	private static Button button_ManageLocks = new Button("Manage locks");
 
-	// GUI ARea 2: This is a stub, so there are no widgets here.  For an actual role page, this are
-	// would contain the widgets needed for the user to play the assigned role.
+	// GUI Area 2: the Manage Locks button opens the Curator locking page.
 
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application and for
 	// logging out.
@@ -165,8 +167,11 @@ public class ViewCuratorHome {
 		label_PageTitle.setText("Curator Home");
 		GuiStyle.placeHomeTitle(label_PageTitle, label_Subtitle);
 
-		// GUI Area 2: the Curator features are TP3 epics, so for now one information card on
-		// the shared grid says what will appear here.
+		// Why: keep the curator feature behind the authenticated curator home page.
+		button_ManageLocks.setOnAction(event ->
+				ViewCuratorLocks.displayCuratorLocks(theStage, theUser));
+
+		// GUI Area 2: present the locking feature on the shared home-page grid.
 
 		// GUI Area 3: Quit, which GuiStyle places in the same corner on every page
 		GuiStyle.styleQuitButton(button_Quit);
@@ -181,7 +186,7 @@ public class ViewCuratorHome {
 			label_UserDetails, button_UpdateThisUser, button_Logout,
 			label_PageTitle, label_Subtitle,
 			GuiStyle.createFeatureCard(GuiStyle.featureCardX(0), GuiStyle.FEATURE_ROW_Y, "Curator tools",
-					"Reviewing, refining, and locking lessons will appear here in the next phase.", null),
+					"Lock or unlock the title, body, or category of a lesson.", button_ManageLocks),
 			button_Quit);
 	}
 }
