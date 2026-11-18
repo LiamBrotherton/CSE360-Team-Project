@@ -51,6 +51,42 @@ public class ControllerCuratorHome {
 	}	
 
 	/**********
+	 * <p> Method: performLessons() </p>
+	 *
+	 * <p> Description: This method directs the user to the All Lessons page, where a Curator
+	 * chooses a lesson to review, lock, or refine. </p>
+	 *
+	 */
+	protected static void performLessons() {
+		guiCuratorLessons.ViewCuratorLessons.displayCuratorLessons(ViewCuratorHome.theStage,
+				ViewCuratorHome.theUser);
+	}
+
+	/**********
+	 * <p> Method: performTimeAndEffort() </p>
+	 *
+	 * <p> Description: This method directs the user to the Time and Effort page, where a Curator
+	 * combines the time and effort of several lessons. </p>
+	 *
+	 */
+	protected static void performTimeAndEffort() {
+		guiCuratorMerge.ViewCuratorMerge.displayCuratorMerge(ViewCuratorHome.theStage,
+				ViewCuratorHome.theUser);
+	}
+
+	/**********
+	 * <p> Method: performSearchTerms() </p>
+	 *
+	 * <p> Description: This method directs the user to the Search Terms page, where a Curator builds
+	 * the list of search terms for a lesson. </p>
+	 *
+	 */
+	protected static void performSearchTerms() {
+		guiCuratorSearchTerms.ViewCuratorSearchTerms.displayCuratorSearchTerms(
+				ViewCuratorHome.theStage, ViewCuratorHome.theUser);
+	}
+
+	/**********
 	 * <p> Method: performLogout() </p>
 	 * 
 	 * <p> Description: This method logs out the current user and proceeds to the normal login

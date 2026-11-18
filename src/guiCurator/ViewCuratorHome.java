@@ -31,6 +31,9 @@ import entityClasses.User;
  * 							Account Update and Logout buttons; a page title with a line below it;
  * 							an information card on the shared grid in place of the empty page; and
  * 							the quiet Quit button in the same corner as on every page.
+ * @version 2.20		2026-11-15 The information card is replaced by one feature card for each of
+ * 							the three Curator pages: All Lessons, Time and Effort, and Search Terms.
+ *							The pages are layouts only; their features are TP3 work.
  *
  */
 
@@ -54,11 +57,13 @@ public class ViewCuratorHome {
 	// and a button to allow this user to update the account settings
 	protected static Label label_PageTitle = new Label();
 	protected static Label label_UserDetails = new Label();
-	private static Label label_Subtitle = new Label("Your curator tools will appear here.");
+	private static Label label_Subtitle = new Label("Review, lock, and refine the lessons.");
 	protected static Button button_UpdateThisUser = new Button("Account Update");
 
-	// GUI ARea 2: This is a stub, so there are no widgets here.  For an actual role page, this are
-	// would contain the widgets needed for the user to play the assigned role.
+	// GUI Area 2: one button for each Curator page, each shown on its own feature card
+	private static Button button_Lessons = new Button("Review lessons");
+	private static Button button_TimeAndEffort = new Button("Combine data");
+	private static Button button_SearchTerms = new Button("Build terms");
 
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application and for
 	// logging out.
@@ -165,8 +170,11 @@ public class ViewCuratorHome {
 		label_PageTitle.setText("Curator Home");
 		GuiStyle.placeHomeTitle(label_PageTitle, label_Subtitle);
 
-		// GUI Area 2: the Curator features are TP3 epics, so for now one information card on
-		// the shared grid says what will appear here.
+		// GUI Area 2: one card for each Curator page, on the shared grid.  The pages are layouts
+		// only for now, because the Curator features are TP3 epics.
+		button_Lessons.setOnAction((_) -> {ControllerCuratorHome.performLessons(); });
+		button_TimeAndEffort.setOnAction((_) -> {ControllerCuratorHome.performTimeAndEffort(); });
+		button_SearchTerms.setOnAction((_) -> {ControllerCuratorHome.performSearchTerms(); });
 
 		// GUI Area 3: Quit, which GuiStyle places in the same corner on every page
 		GuiStyle.styleQuitButton(button_Quit);
@@ -180,8 +188,12 @@ public class ViewCuratorHome {
 			GuiStyle.createHeaderBar(), GuiStyle.createLogo(24, 20, true),
 			label_UserDetails, button_UpdateThisUser, button_Logout,
 			label_PageTitle, label_Subtitle,
-			GuiStyle.createFeatureCard(GuiStyle.featureCardX(0), GuiStyle.FEATURE_ROW_Y, "Curator tools",
-					"Reviewing, refining, and locking lessons will appear here in the next phase.", null),
+			GuiStyle.createFeatureCard(GuiStyle.featureCardX(0), GuiStyle.FEATURE_ROW_Y, "Lessons",
+					"See every lesson, lock what Contributors must not change, or refine the text.", button_Lessons),
+			GuiStyle.createFeatureCard(GuiStyle.featureCardX(1), GuiStyle.FEATURE_ROW_Y, "Time and effort",
+					"Combine the time and effort from several lessons into one summary.", button_TimeAndEffort),
+			GuiStyle.createFeatureCard(GuiStyle.featureCardX(2), GuiStyle.FEATURE_ROW_Y, "Search terms",
+					"Build a list of words that help people find a lesson.", button_SearchTerms),
 			button_Quit);
 	}
 }

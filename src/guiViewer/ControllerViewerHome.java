@@ -22,6 +22,8 @@ package guiViewer;
  * @version 2.00		2026-10-16 Added the performAllLessons and performSearchLessons actions
  * 							for the two TP2 feature buttons.  Each opens the Coming Soon page until
  * 							its feature is built.
+ * @version 2.10		2026-11-12 performAllLessons now opens the All Lessons page (TP3 prototype).
+ *							performSearchLessons is still a Coming Soon placeholder.
  */
 
 public class ControllerViewerHome {
@@ -56,13 +58,14 @@ public class ControllerViewerHome {
 	/**********
 	 * <p> Method: performAllLessons() </p>
 	 *
-	 * <p> Description: This method directs the user to the Coming Soon page for the list of all
-	 * the lessons.  It is a placeholder until the All Lessons page has been built. </p>
+	 * <p> Description: Opens the All Lessons page, which lists every lesson in the database
+	 * for the current Viewer. </p>
 	 *
 	 */
-	protected static void performAllLessons () {
-		guiComingSoon.ViewComingSoon.displayComingSoon(ViewViewerHome.theStage,
-				ViewViewerHome.theUser, "All lessons");
+	protected static void performAllLessons() {
+	    ViewViewerLessons.displayAllLessons(
+	            ViewViewerHome.theStage,
+	            ViewViewerHome.theUser);
 	}
 
 	/**********
