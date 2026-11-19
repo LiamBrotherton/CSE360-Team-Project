@@ -24,6 +24,7 @@ package guiViewer;
  * 							its feature is built.
  * @version 2.10		2026-11-12 performAllLessons now opens the All Lessons page (TP3 prototype).
  *							performSearchLessons is still a Coming Soon placeholder.
+ * @version 3.00        2026-11-19 Finished implementing viewer user stories
  */
 
 public class ControllerViewerHome {
@@ -68,16 +69,13 @@ public class ControllerViewerHome {
 	            ViewViewerHome.theUser);
 	}
 
-	/**********
-	 * <p> Method: performSearchLessons() </p>
-	 *
-	 * <p> Description: This method directs the user to the Coming Soon page for searching the
-	 * lessons by keyword.  It is a placeholder until the Search Lessons page has been built. </p>
-	 *
+	/**
+	 * Opens the Viewer keyword-search page.
 	 */
-	protected static void performSearchLessons () {
-		guiComingSoon.ViewComingSoon.displayComingSoon(ViewViewerHome.theStage,
-				ViewViewerHome.theUser, "Search lessons");
+	protected static void performSearchLessons() {
+	    ViewViewerLessons.displayAllLessons(
+	            ViewViewerHome.theStage,
+	            ViewViewerHome.theUser);
 	}
 
 	/**********
