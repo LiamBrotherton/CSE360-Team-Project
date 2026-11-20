@@ -3,6 +3,8 @@ package guiLessonDetail;
 import java.util.Optional;
 
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import entityClasses.LessonsLearned;
 import inputRecognizer.LessonValidator;
 
@@ -148,6 +150,27 @@ public class ControllerLessonDetail {
 		guiWritingHelp.ViewWritingHelp.displayWritingHelp(ViewLessonDetail.theStage,
 				ViewLessonDetail.theUser, ViewLessonDetail.theLessonId);
 	}
+
+    /**
+     * Shows a Curator-added statistical summary only if the currently logged-in
+     * Contributor owns the lesson and the Curator explicitly enabled visibility.
+     * Every click re-reads the protected data, so a revoked permission takes effect.
+     */
+    protected static void performViewStatistics() {
+        String summary = ViewLessonDetail.theDatabase.getCuratorSummaryForViewer(
+                ViewLessonDetail.theLessonId, ViewLessonDetail.theUser);
+        if (summary.isEmpty()) {
+            ViewLessonDetail.button_ViewStatistics.setVisible(false);
+            ViewLessonDetail.label_Message.setText("No statistics are available for this lesson.");
+            return;
+        }
+        Alert details = new Alert(AlertType.INFORMATION);
+        details.setTitle("Time and effort statistics");
+        details.setHeaderText("Curator-shared statistical summary");
+        details.setContentText(summary);
+        details.getDialogPane().setPrefWidth(520);
+        details.showAndWait();
+    }
 
 	/**********
 	 * <p> Method: performBackToMyLessons() </p>

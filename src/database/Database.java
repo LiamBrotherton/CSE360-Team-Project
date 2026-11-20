@@ -51,6 +51,7 @@ public class Database {
 	static final String PASS = ""; 
 
 	//  Shared variables used within this class
+	private final String databaseUrl;
 	private Connection connection = null;		// Singleton to access the database 
 	private Statement statement = null;			// The H2 Statement is used to construct queries
 	
@@ -77,7 +78,19 @@ public class Database {
 	 */
 	
 	public Database () {
-		
+		this(DB_URL);
+	}
+
+	/**
+	 * Allows integration tests to use their own isolated H2 database instead of
+	 * the application database in ~/FoundationDatabase. The application keeps
+	 * using the default constructor and its existing persistent database.
+	 */
+	public Database(String jdbcUrl) {
+		if (jdbcUrl == null || jdbcUrl.isBlank()) {
+			throw new IllegalArgumentException("Database URL must not be blank");
+		}
+		this.databaseUrl = jdbcUrl;
 	}
 	
 	
@@ -93,7 +106,7 @@ public class Database {
 	public void connectToDatabase() throws SQLException {
 		try {
 			Class.forName(JDBC_DRIVER); // Load the JDBC driver
-			connection = DriverManager.getConnection(DB_URL, USER, PASS);
+			connection = DriverManager.getConnection(databaseUrl, USER, PASS);
 			statement = connection.createStatement(); 
 			// You can use this command to clear the database and restart from fresh.
 			//statement.execute("DROP ALL OBJECTS");
@@ -152,13 +165,18 @@ public class Database {
 	    		+ "expHowItWasDone VARCHAR(2000), "
 	    		+ "expDuration VARCHAR(255), "
 	    		+ "expEffort VARCHAR(255), "
-	    		+ "addedBy VARCHAR(255))";	// The Contributor who added the lesson
+	    		+ "addedBy VARCHAR(255), "
+	    		+ "curatorSummary VARCHAR(4000), "
+	    		+ "curatorSummaryVisible BOOL DEFAULT FALSE)";	// Curator-added statistics are hidden by default
 	    statement.execute(lessonTable);
 
 	    // A database made before the addedBy column existed already has a lessonDB table, so
 	    // CREATE TABLE IF NOT EXISTS above leaves it alone.  This adds the column to such a table
 	    // instead of letting every later query fail on the missing column.
 	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS addedBy VARCHAR(255)");
+	    // Existing databases must gain the Phase 3 columns without deleting saved lessons.
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS curatorSummary VARCHAR(4000)");
+	    statement.execute("ALTER TABLE lessonDB ADD COLUMN IF NOT EXISTS curatorSummaryVisible BOOL DEFAULT FALSE");
 	}
 
 
@@ -1997,4 +2015,94 @@ public class Database {
 			se.printStackTrace(); 
 		} 
 	}
+
+
+    /* ============================================================================
+     * TP3 — Curator statistical-summary visibility (Hassan)
+     * ============================================================================ */
+
+    /**
+     * Saves a Curator-created statistical summary for one destination lesson.
+     * Liam's merge calculation can call this method once a summary is produced.
+     * Replacing a summary automatically hides the new result until approved again.
+     *
+     * @return true only when an authorized Curator saved a nonblank summary
+     */
+    public boolean saveCuratorSummary(int lessonId, String summary, User actor) {
+        if (actor == null || !actor.getCuratorRole() || summary == null || summary.isBlank()) {
+            return false;
+        }
+        String sql = "UPDATE lessonDB SET curatorSummary = ?, "
+                + "curatorSummaryVisible = FALSE WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, summary);
+            statement.setInt(2, lessonId);
+            return statement.executeUpdate() == 1;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Sets whether the destination lesson's Curator-produced summary can be seen by
+     * its original Contributor.  Only a Curator can change the setting, and the
+     * summary must already exist (no meaningless checkbox changes).
+     */
+    public boolean setCuratorSummaryVisibility(int lessonId, boolean visible, User actor) {
+        if (actor == null || !actor.getCuratorRole()) return false;
+        String sql = "UPDATE lessonDB SET curatorSummaryVisible = ? WHERE id = ? "
+                + "AND curatorSummary IS NOT NULL AND TRIM(curatorSummary) <> ''";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setBoolean(1, visible);
+            statement.setInt(2, lessonId);
+            return statement.executeUpdate() == 1;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    /** Returns the stored visibility setting without exposing the summary itself. */
+    public boolean isCuratorSummaryVisible(int lessonId) {
+        String sql = "SELECT curatorSummaryVisible FROM lessonDB WHERE id = ? "
+                + "AND curatorSummary IS NOT NULL";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, lessonId);
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next() && rs.getBoolean(1);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Returns statistics only to a Curator, or to the original Contributor when
+     * the Curator has explicitly enabled sharing. Other users get no data.
+     * The permission check happens here in the data layer, not only in the GUI.
+     */
+    public String getCuratorSummaryForViewer(int lessonId, User viewer) {
+        if (viewer == null) return "";
+        String sql = "SELECT curatorSummary, curatorSummaryVisible, addedBy "
+                + "FROM lessonDB WHERE id = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, lessonId);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) return "";
+                String summary = rs.getString("curatorSummary");
+                if (summary == null || summary.isBlank()) return "";
+                if (viewer.getCuratorRole()) return summary;
+                boolean isOwner = viewer.getContributorRole()
+                        && viewer.getUserName() != null
+                        && viewer.getUserName().equals(rs.getString("addedBy"));
+                return isOwner && rs.getBoolean("curatorSummaryVisible") ? summary : "";
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return "";
+        }
+    }
+
 }

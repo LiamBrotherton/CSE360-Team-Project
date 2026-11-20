@@ -5,20 +5,23 @@ package guiCuratorMerge;
  *
  * <p> Description: The Java/FX-based Time and Effort page controller.  It provides the actions for
  * the controls defined by the View class.  Back is navigation.  Merge and the visibility choice are
- * not built yet, so each tells the Curator what it will do, in the muted line on the page, and
- * changes nothing.</p>
+ * not built yet, so Merge displays a note. Visibility changes are saved in H2 and
+ * require Curator authorization.</p>
  *
  * <p> The class has been written assuming that the View is the only class that can invoke these
  * methods.  This is why each has been declared "protected".  Do not change any of these methods to
  * public.</p>
  *
- * <p> Tested by: no automated test, since the actions only navigate or show a note.</p>
+ * <p> Tested by: testing.CuratorSummaryVisibilityTest verifies persistence and access;
+ * JavaFX interactions also need manual testing.</p>
  *
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  *
  * @author Dhruv
+ * @author Hassan Mohamed (visibility integration)
  *
  * @version 1.00		2026-11-15 Initial version
+ * @version 1.10        2026-11-19 Save checkbox changes
  */
 
 public class ControllerCuratorMerge {
@@ -53,15 +56,26 @@ public class ControllerCuratorMerge {
 	/**********
 	 * <p> Method: performVisibilityChange() </p>
 	 *
-	 * <p> Description: This method will save whether Contributors can see the combined summary.  It
-	 * is not built yet, so it only says so, and the box is put back to unchecked so the page does
-	 * not show a choice that was never saved. </p>
+	 * <p> Description: Saves the checkbox state for the currently selected Curator
+     * summary and refreshes the screen from the database. </p>
 	 *
 	 */
 	protected static void performVisibilityChange() {
-		ViewCuratorMerge.check_ShowToContributors.setSelected(false);
-		ViewCuratorMerge.label_Message.setText("Choosing who can see the summary is not built yet.  "
-				+ "Once it is, this box will decide it.");
+		Integer lessonId = ViewCuratorMerge.targetLessonIds.get(
+                ViewCuratorMerge.combo_TargetLesson.getValue());
+        if (lessonId == null) {
+            ViewCuratorMerge.label_Message.setText("Select a saved summary first.");
+            ViewCuratorMerge.refreshSelectedSummary();
+            return;
+        }
+        boolean visible = ViewCuratorMerge.check_ShowToContributors.isSelected();
+        boolean saved = applicationMain.FoundationsMain.database.setCuratorSummaryVisibility(
+                lessonId, visible, ViewCuratorMerge.theUser);
+        ViewCuratorMerge.refreshSelectedSummary();
+        ViewCuratorMerge.label_Message.setText(saved
+                ? (visible ? "Statistics are now shared with the original Contributor."
+                           : "Statistics are now hidden from Contributors.")
+                : "Could not save visibility. Verify that you are a Curator and a summary exists.");
 	}
 
 	/**********

@@ -108,6 +108,7 @@ public class ViewLessonDetail {
 
 	private static Button button_DeleteLesson = new Button("Delete lesson");
 	private static Button button_WritingHelp = new Button("Writing help");
+	protected static Button button_ViewStatistics = new Button("Statistics");
 	private static Button button_BackToMyLessons = new Button("Back to my lessons");
 
 	/** The question asked before a lesson is deleted (R5). */
@@ -200,6 +201,10 @@ public class ViewLessonDetail {
 		showLock(button_EditCategory, label_CategoryLocked, lessonsLearned.getCategoryLocked());
 		showLock(button_EditBody, label_BodyLocked, lessonsLearned.getBodyLocked());
 		label_Message.setText(message);
+        // The data layer checks both the Curator's sharing choice and lesson ownership.
+        // Hidden statistics must never be sent to the Contributor's GUI.
+        button_ViewStatistics.setVisible(!theDatabase.getCuratorSummaryForViewer(
+                lessonId, theUser).isEmpty());
 
 		// Set the title for the window, display the page, and wait for the user to act
 		theStage.setTitle("CSE 360 Foundation Code: LessonsLearned Details");
@@ -270,16 +275,20 @@ public class ViewLessonDetail {
 		GuiStyle.styleErrorLabel(label_Message);
 
 		// The two buttons along the bottom of the card
-		setupButtonUI(button_DeleteLesson, 160, rowX);
+		setupButtonUI(button_DeleteLesson, 145, rowX);
 		GuiStyle.styleSecondaryButton(button_DeleteLesson);
 		button_DeleteLesson.setOnAction((_) -> ControllerLessonDetail.performDelete());
 
 		// Between Delete and Back, since it is a secondary action like the others on this row
-		setupButtonUI(button_WritingHelp, 170, 250);
+		setupButtonUI(button_WritingHelp, 140, 225);
 		GuiStyle.styleSecondaryButton(button_WritingHelp);
 		button_WritingHelp.setOnAction((_) -> ControllerLessonDetail.performWritingHelp());
 
-		setupButtonUI(button_BackToMyLessons, 190, 540);
+        setupButtonUI(button_ViewStatistics, 140, 380);
+        GuiStyle.styleSecondaryButton(button_ViewStatistics);
+        button_ViewStatistics.setOnAction((_) -> ControllerLessonDetail.performViewStatistics());
+
+		setupButtonUI(button_BackToMyLessons, 195, 535);
 		GuiStyle.styleSecondaryButton(button_BackToMyLessons);
 		button_BackToMyLessons.setOnAction((_) -> ControllerLessonDetail.performBackToMyLessons());
 
@@ -292,7 +301,8 @@ public class ViewLessonDetail {
 				label_Title, label_TitleValue, button_EditTitle, label_TitleLocked,
 				label_Category, label_CategoryValue, button_EditCategory, label_CategoryLocked,
 				label_Body, scroll_Body, button_EditBody, label_BodyLocked,
-				label_Message, button_DeleteLesson, button_WritingHelp, button_BackToMyLessons);
+				label_Message, button_DeleteLesson, button_WritingHelp, button_ViewStatistics,
+                button_BackToMyLessons);
 	}
 
 	/*-********************************************************************************************

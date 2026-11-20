@@ -4,6 +4,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import java.util.HashMap;
+import java.util.Map;
+import database.Database;
+import entityClasses.LessonsLearned;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
@@ -21,23 +26,24 @@ import guiTools.GuiStyle;
  * Contributors can see that summary.  It serves the Curator epics on merging time and effort data
  * and on making the merged information visible to the Contributor or not.</p>
  *
- * <p> This page is a layout only.  The list is empty, the summary area is empty, and the Merge
- * button and the visibility choice say what they will do once the feature is built.  Merging the
- * data and saving the visibility choice arrive with the feature.</p>
+ * <p> The Merge button remains a placeholder until statistical calculations are integrated.
+ * The visibility section now loads Curator-created summaries from the database and persists
+ * the Curator's show/hide choice for the selected summary.</p>
  *
  * <p> The class has been written using a singleton design pattern and is the View portion of the
  * Model, View, Controller pattern.  All access starts by invoking the static method
- * displayCuratorMerge.  There is no Model yet, because there is no data to hold until the feature
- * is built.</p>
+ * displayCuratorMerge. The database owns the saved summary and visibility state.</p>
  *
- * <p> Tested by: no automated test, since the page only navigates and shows notes.  It is covered by
- * the manual checks of the Curator pages.</p>
+ * <p> Backend permission and persistence rules are covered by
+ * testing.CuratorSummaryVisibilityTest. Checkbox interaction requires a manual GUI test.</p>
  *
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  *
  * @author Dhruv
+ * @author Hassan Mohamed (visibility integration)
  *
  * @version 1.00		2026-11-15 Initial version, a layout without the feature
+ * @version 1.10        2026-11-19 Persist Curator visibility for stored summaries
  */
 
 public class ViewCuratorMerge {
@@ -62,18 +68,22 @@ public class ViewCuratorMerge {
 
 	private static Label label_Lessons = new Label("Lessons to combine");
 
-	/** The lessons that have time and effort data.  Two or more can be chosen.  Empty until the
-	 *  feature is built. */
+	/** The lessons that have time and effort data. Two or more can be chosen
+     * by the forthcoming merge calculation. */
 	protected static ListView<String> list_Lessons = new ListView<>();
 
 	private static Label label_Summary = new Label("Combined summary");
+	private static Label label_TargetLesson = new Label("Saved summary for lesson");
+	protected static ComboBox<String> combo_TargetLesson = new ComboBox<>();
+	protected static Map<String, Integer> targetLessonIds = new HashMap<>();
+	private static Database theDatabase = applicationMain.FoundationsMain.database;
 	private static TextArea area_Summary = new TextArea();
 
 	/** Whether Contributors can see the combined summary.  Off, so the summary stays with the
 	 *  Curator until the Curator chooses otherwise. */
 	protected static CheckBox check_ShowToContributors = new CheckBox("Show this summary to Contributors");
 
-	/** The line that tells the Curator what a control will do once it is built. */
+	/** Feedback on merging or saving the visibility setting. */
 	protected static Label label_Message = new Label();
 
 	private static Button button_Merge = new Button("Merge chosen lessons");
@@ -123,6 +133,21 @@ public class ViewCuratorMerge {
 		if (theView == null) theView = new ViewCuratorMerge();
 
 		label_Message.setText("");
+        // Requery when the page opens, so the summaries Liam creates appear immediately.
+        list_Lessons.getItems().clear();
+        combo_TargetLesson.getItems().clear();
+        targetLessonIds.clear();
+        for (LessonsLearned lesson : theDatabase.getAllLessons().getLessons()) {
+            String row = "#" + lesson.getId() + " - " + lesson.getTitle();
+            if (lesson.hasExperienceInformation()) list_Lessons.getItems().add(row);
+            if (!theDatabase.getCuratorSummaryForViewer(lesson.getId(), user).isEmpty()) {
+                combo_TargetLesson.getItems().add(row);
+                targetLessonIds.put(row, lesson.getId());
+            }
+        }
+        combo_TargetLesson.setDisable(combo_TargetLesson.getItems().isEmpty());
+        if (!combo_TargetLesson.getItems().isEmpty()) combo_TargetLesson.getSelectionModel().selectFirst();
+        refreshSelectedSummary();
 
 		// Set the title for the window, display the page, and wait for the Curator to act
 		theStage.setTitle("CSE 360 Foundation Code: Time and Effort");
@@ -183,9 +208,19 @@ public class ViewCuratorMerge {
 		area_Summary.setPrefSize(310, 170);
 		GuiStyle.styleTextArea(area_Summary);
 
-		// The visibility choice, under the summary it controls
+		// Choose which saved summary's visibility to control, independently of the list
+        // that Liam's merging feature will use for selecting source lessons.
+        label_TargetLesson.setLayoutX(420);
+        label_TargetLesson.setLayoutY(375);
+        GuiStyle.styleFieldLabel(label_TargetLesson);
+        combo_TargetLesson.setLayoutX(420);
+        combo_TargetLesson.setLayoutY(394);
+        combo_TargetLesson.setPrefWidth(310);
+        combo_TargetLesson.setOnAction((_) -> refreshSelectedSummary());
+
+		// The visibility choice, under the saved-summary selector
 		check_ShowToContributors.setLayoutX(420);
-		check_ShowToContributors.setLayoutY(384);
+		check_ShowToContributors.setLayoutY(427);
 		check_ShowToContributors.setFont(GuiStyle.fontBody());
 		check_ShowToContributors.setStyle("-fx-text-fill: " + GuiStyle.COLOR_TEXT + ";");
 		check_ShowToContributors.setOnAction((_) -> ControllerCuratorMerge.performVisibilityChange());
@@ -214,9 +249,21 @@ public class ViewCuratorMerge {
 				GuiStyle.createLogo(70, 66),
 				label_PageTitle, label_Purpose,
 				label_Lessons, list_Lessons,
-				label_Summary, area_Summary, check_ShowToContributors,
+				label_Summary, area_Summary, label_TargetLesson, combo_TargetLesson,
+                check_ShowToContributors,
 				label_Message, button_Merge, button_BackToHome);
 	}
+
+    /** Refreshes the summary text and checkbox for the selected destination lesson. */
+    protected static void refreshSelectedSummary() {
+        Integer lessonId = targetLessonIds.get(combo_TargetLesson.getValue());
+        boolean valid = lessonId != null && theUser != null && theUser.getCuratorRole();
+        String summary = valid ? theDatabase.getCuratorSummaryForViewer(lessonId, theUser) : "";
+        area_Summary.setText(summary);
+        check_ShowToContributors.setDisable(summary.isEmpty());
+        check_ShowToContributors.setSelected(valid && !summary.isEmpty()
+                && theDatabase.isCuratorSummaryVisible(lessonId));
+    }
 
 	/*-********************************************************************************************
 
