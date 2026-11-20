@@ -53,6 +53,8 @@ import guiTools.GuiStyle;
  * @author Dhruv
  *
  * @version 1.00		2026-10-20 Initial version
+ * @version 1.10		2026-11-19 Added the Writing Help button, which opens the Writing Help page for
+ * 							this lesson (Contributor Phase 3 epic)
  */
 
 public class ViewLessonDetail {
@@ -105,6 +107,7 @@ public class ViewLessonDetail {
 	protected static Label label_Message = new Label();
 
 	private static Button button_DeleteLesson = new Button("Delete lesson");
+	private static Button button_WritingHelp = new Button("Writing help");
 	private static Button button_BackToMyLessons = new Button("Back to my lessons");
 
 	/** The question asked before a lesson is deleted (R5). */
@@ -271,6 +274,11 @@ public class ViewLessonDetail {
 		GuiStyle.styleSecondaryButton(button_DeleteLesson);
 		button_DeleteLesson.setOnAction((_) -> ControllerLessonDetail.performDelete());
 
+		// Between Delete and Back, since it is a secondary action like the others on this row
+		setupButtonUI(button_WritingHelp, 170, 250);
+		GuiStyle.styleSecondaryButton(button_WritingHelp);
+		button_WritingHelp.setOnAction((_) -> ControllerLessonDetail.performWritingHelp());
+
 		setupButtonUI(button_BackToMyLessons, 190, 540);
 		GuiStyle.styleSecondaryButton(button_BackToMyLessons);
 		button_BackToMyLessons.setOnAction((_) -> ControllerLessonDetail.performBackToMyLessons());
@@ -284,7 +292,7 @@ public class ViewLessonDetail {
 				label_Title, label_TitleValue, button_EditTitle, label_TitleLocked,
 				label_Category, label_CategoryValue, button_EditCategory, label_CategoryLocked,
 				label_Body, scroll_Body, button_EditBody, label_BodyLocked,
-				label_Message, button_DeleteLesson, button_BackToMyLessons);
+				label_Message, button_DeleteLesson, button_WritingHelp, button_BackToMyLessons);
 	}
 
 	/*-********************************************************************************************

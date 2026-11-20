@@ -27,6 +27,7 @@ import inputRecognizer.LessonValidator;
  * @author Dhruv
  *
  * @version 1.00		2026-10-20 Initial version
+ * @version 1.10		2026-11-19 Added performWritingHelp
  */
 
 public class ControllerLessonDetail {
@@ -133,6 +134,19 @@ public class ControllerLessonDetail {
 		if (result.isEmpty()) backToMyLessons("");
 		else if (result.equals(ModelLessonDetail.NOT_AVAILABLE)) backToMyLessons(result);
 		else ViewLessonDetail.label_Message.setText(result);
+	}
+
+	/**********
+	 * <p> Method: performWritingHelp() </p>
+	 *
+	 * <p> Description: This method opens the Writing Help page for this lesson, where the
+	 * Contributor can ask an assistant for a suggestion, brainstorm, or search their own lessons for
+	 * examples.  The Writing Help page checks that the lesson is still this Contributor's. </p>
+	 *
+	 */
+	protected static void performWritingHelp() {
+		guiWritingHelp.ViewWritingHelp.displayWritingHelp(ViewLessonDetail.theStage,
+				ViewLessonDetail.theUser, ViewLessonDetail.theLessonId);
 	}
 
 	/**********
