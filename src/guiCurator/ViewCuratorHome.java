@@ -64,6 +64,7 @@ public class ViewCuratorHome {
 	private static Button button_Lessons = new Button("Review lessons");
 	private static Button button_TimeAndEffort = new Button("Combine data");
 	private static Button button_SearchTerms = new Button("Build terms");
+	private static Button button_AITools = new Button("Open AI tools");
 
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application and for
 	// logging out.
@@ -175,6 +176,7 @@ public class ViewCuratorHome {
 		button_Lessons.setOnAction((_) -> {ControllerCuratorHome.performLessons(); });
 		button_TimeAndEffort.setOnAction((_) -> {ControllerCuratorHome.performTimeAndEffort(); });
 		button_SearchTerms.setOnAction((_) -> {ControllerCuratorHome.performSearchTerms(); });
+		button_AITools.setOnAction((_) -> {ControllerCuratorHome.performAITools(); });
 
 		// GUI Area 3: Quit, which GuiStyle places in the same corner on every page
 		GuiStyle.styleQuitButton(button_Quit);
@@ -195,5 +197,7 @@ public class ViewCuratorHome {
 			GuiStyle.createFeatureCard(GuiStyle.featureCardX(2), GuiStyle.FEATURE_ROW_Y, "Search terms",
 					"Build a list of words that help people find a lesson.", button_SearchTerms),
 			button_Quit);
+    		GuiStyle.createFeatureCard(GuiStyle.featureCardX(3), GuiStyle.FEATURE_ROW_Y, "AI Assistant",
+    			"Generate search terms and get AI suggestions to refine lesson text.", button_AITools);
 	}
 }
