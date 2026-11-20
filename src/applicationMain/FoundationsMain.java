@@ -63,11 +63,11 @@ public class FoundationsMain extends Application {
 	/** Creates a new FoundationsMain. */
 	public FoundationsMain() {}
 	
-	/*-*******************************************************************************************
+	/*-********************************************************************************************
 
 	Attributes
 	
-	**********************************************************************************************/
+	***********************************************************************************************/
 	
 	// These are the application values required by the user interface.  All the other classes
 	// access these constants to provide a uniform window size.	

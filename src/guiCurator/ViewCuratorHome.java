@@ -32,8 +32,13 @@ import entityClasses.User;
  * 							an information card on the shared grid in place of the empty page; and
  * 							the quiet Quit button in the same corner as on every page.
  * @version 2.20		2026-11-15 The information card is replaced by one feature card for each of
- * 							the three Curator pages: All Lessons, Time and Effort, and Search Terms.
- *							The pages are layouts only; their features are TP3 work.
+ * 							the Curator pages.  The pages are layouts only; their features are TP3 work.
+ * @version 2.30		2026-11-18 Added the HW3 Manage Locks button (Hassan).
+ * @version 2.40		2026-11-19 Merged the two with the Curator AI page (Ravi): Locks opens the
+ * 							working lock page, Time and Effort opens a layout page, and AI Assistant opens
+ * 							the AI page, which covers search terms and refining.  The AI card was built
+ * 							after the Quit button was added to the pane, so it never showed, and sat in a
+ * 							fourth column off the edge of the window; it is now in the third column.
  *
  */
 
@@ -57,13 +62,15 @@ public class ViewCuratorHome {
 	// and a button to allow this user to update the account settings
 	protected static Label label_PageTitle = new Label();
 	protected static Label label_UserDetails = new Label();
-	private static Label label_Subtitle = new Label("Review, lock, and refine the lessons.");
+	private static Label label_Subtitle = new Label("Review and protect lesson content.");
 	protected static Button button_UpdateThisUser = new Button("Account Update");
+	/** Opens the HW3 lesson-lock manager. */
+	private static Button button_ManageLocks = new Button("Manage locks");
 
-	// GUI Area 2: one button for each Curator page, each shown on its own feature card
-	private static Button button_Lessons = new Button("Review lessons");
+	// GUI Area 2: one button for each Curator page, each shown on its own feature card.  Manage
+	// Locks (declared above) opens the working lock page; the others open the layout page and the
+	// AI page.
 	private static Button button_TimeAndEffort = new Button("Combine data");
-	private static Button button_SearchTerms = new Button("Build terms");
 	private static Button button_AITools = new Button("Open AI tools");
 
 	// GUI Area 3: This is last of the GUI areas.  It is used for quitting the application and for
@@ -171,12 +178,13 @@ public class ViewCuratorHome {
 		label_PageTitle.setText("Curator Home");
 		GuiStyle.placeHomeTitle(label_PageTitle, label_Subtitle);
 
-		// GUI Area 2: one card for each Curator page, on the shared grid.  The pages are layouts
-		// only for now, because the Curator features are TP3 epics.
-		button_Lessons.setOnAction((_) -> {ControllerCuratorHome.performLessons(); });
+		// Why: keep the curator feature behind the authenticated curator home page.
+		button_ManageLocks.setOnAction(event ->
+				ViewCuratorLocks.displayCuratorLocks(theStage, theUser));
 		button_TimeAndEffort.setOnAction((_) -> {ControllerCuratorHome.performTimeAndEffort(); });
-		button_SearchTerms.setOnAction((_) -> {ControllerCuratorHome.performSearchTerms(); });
 		button_AITools.setOnAction((_) -> {ControllerCuratorHome.performAITools(); });
+
+		// GUI Area 2: one card for each Curator page, on the shared grid.
 
 		// GUI Area 3: Quit, which GuiStyle places in the same corner on every page
 		GuiStyle.styleQuitButton(button_Quit);
@@ -190,14 +198,12 @@ public class ViewCuratorHome {
 			GuiStyle.createHeaderBar(), GuiStyle.createLogo(24, 20, true),
 			label_UserDetails, button_UpdateThisUser, button_Logout,
 			label_PageTitle, label_Subtitle,
-			GuiStyle.createFeatureCard(GuiStyle.featureCardX(0), GuiStyle.FEATURE_ROW_Y, "Lessons",
-					"See every lesson, lock what Contributors must not change, or refine the text.", button_Lessons),
+			GuiStyle.createFeatureCard(GuiStyle.featureCardX(0), GuiStyle.FEATURE_ROW_Y, "Locks",
+					"Lock or unlock the title, body, or category of a lesson.", button_ManageLocks),
 			GuiStyle.createFeatureCard(GuiStyle.featureCardX(1), GuiStyle.FEATURE_ROW_Y, "Time and effort",
 					"Combine the time and effort from several lessons into one summary.", button_TimeAndEffort),
-			GuiStyle.createFeatureCard(GuiStyle.featureCardX(2), GuiStyle.FEATURE_ROW_Y, "Search terms",
-					"Build a list of words that help people find a lesson.", button_SearchTerms),
+			GuiStyle.createFeatureCard(GuiStyle.featureCardX(2), GuiStyle.FEATURE_ROW_Y, "AI Assistant",
+					"Generate search terms and get AI suggestions to refine lesson text.", button_AITools),
 			button_Quit);
-    		GuiStyle.createFeatureCard(GuiStyle.featureCardX(3), GuiStyle.FEATURE_ROW_Y, "AI Assistant",
-    			"Generate search terms and get AI suggestions to refine lesson text.", button_AITools);
 	}
 }
