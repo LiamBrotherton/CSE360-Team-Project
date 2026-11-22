@@ -1,5 +1,8 @@
 package guiCuratorMerge;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -9,9 +12,17 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.Pane;
+import javafx.scene.Node;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.MultipleSelectionModel;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import database.Database;
+import entityClasses.LessonsLearned;
+import entityClasses.LessonsLearnedList;
 import entityClasses.User;
 import guiTools.GuiStyle;
+
 
 /*******
  * <p> Title: ViewCuratorMerge Class. </p>
@@ -21,23 +32,22 @@ import guiTools.GuiStyle;
  * Contributors can see that summary.  It serves the Curator epics on merging time and effort data
  * and on making the merged information visible to the Contributor or not.</p>
  *
- * <p> This page is a layout only.  The list is empty, the summary area is empty, and the Merge
- * button and the visibility choice say what they will do once the feature is built.  Merging the
- * data and saving the visibility choice arrive with the feature.</p>
+ * <p> The list of lessons is read fresh from the database each time the page is displayed, so
+ * changes made elsewhere show up the next time the Curator arrives.  Merging the data and saving
+ * the visibility choice arrive with the feature.</p>
  *
  * <p> The class has been written using a singleton design pattern and is the View portion of the
  * Model, View, Controller pattern.  All access starts by invoking the static method
- * displayCuratorMerge.  There is no Model yet, because there is no data to hold until the feature
- * is built.</p>
+ * displayCuratorMerge.</p>
  *
  * <p> Tested by: no automated test, since the page only navigates and shows notes.  It is covered by
  * the manual checks of the Curator pages.</p>
  *
  * <p> Copyright: Lynn Robert Carter © 2025 </p>
  *
- * @author Dhruv
+ * @author Dhruv, Liam
  *
- * @version 1.00		2026-11-15 Initial version, a layout without the feature
+ * @version 1.01		2026-11-22 The lesson list is now populated from the database
  */
 
 public class ViewCuratorMerge {
@@ -53,6 +63,9 @@ public class ViewCuratorMerge {
 	private static double width = applicationMain.FoundationsMain.WINDOW_WIDTH;
 	private static double height = applicationMain.FoundationsMain.WINDOW_HEIGHT;
 
+	/** The database the lessons are read from. */
+	protected static Database theDatabase = applicationMain.FoundationsMain.database;
+
 	// These are the widget attributes for the GUI.  The page is one card holding the logo, the
 	// title, the lessons to merge on the left, the summary and the visibility choice on the right,
 	// a line for messages, and the buttons.
@@ -62,12 +75,14 @@ public class ViewCuratorMerge {
 
 	private static Label label_Lessons = new Label("Lessons to combine");
 
-	/** The lessons that have time and effort data.  Two or more can be chosen.  Empty until the
-	 *  feature is built. */
+	/** The lessons that have time and effort data.  Two or more can be chosen. */
 	protected static ListView<String> list_Lessons = new ListView<>();
 
+	/** The ID of the lesson in each row of the list, in the same order as the rows. */
+	protected static List<Integer> lessonIds = new ArrayList<>();
+
 	private static Label label_Summary = new Label("Combined summary");
-	private static TextArea area_Summary = new TextArea();
+	protected static TextArea area_Summary = new TextArea();
 
 	/** Whether Contributors can see the combined summary.  Off, so the summary stays with the
 	 *  Curator until the Curator chooses otherwise. */
@@ -106,7 +121,7 @@ public class ViewCuratorMerge {
 	 * It first sets up the shared attributes so we don't have to pass parameters.  It then checks
 	 * to see if the page has been setup.  If not, it instantiates the class, which initializes all
 	 * the static aspects of the GUI widgets.  It then clears the message, sets the Scene onto the
-	 * stage, and makes it visible.</p>
+	 * stage, makes it visible, and fills the list of lessons from the database.</p>
 	 *
 	 * @param ps specifies the JavaFX Stage to be used for this GUI and it's methods
 	 *
@@ -124,10 +139,23 @@ public class ViewCuratorMerge {
 
 		label_Message.setText("");
 
-		// Set the title for the window, display the page, and wait for the Curator to act
+		// Set the title for the window and display the page.  The list is filled after the page is
+		// on the stage, so its new rows are styled as part of the window they appear in.
 		theStage.setTitle("CSE 360 Foundation Code: Time and Effort");
 		theStage.setScene(theCuratorMergeScene);
 		theStage.show();
+
+		// Populate the dynamic aspects of the GUI: the lessons, read fresh each time.  Both lists
+		// are cleared together so row i always matches lessonIds.get(i).
+		LessonsLearnedList lessons = theDatabase.getAllLessons();
+		list_Lessons.getItems().clear();
+		lessonIds.clear();
+		for (LessonsLearned lessonsLearned : lessons.getLessons()) {
+			if (lessonsLearned.getDuration() == null || lessonsLearned.getEffort() == null) continue;
+			list_Lessons.getItems().add(lessonsLearned.getTitle());
+			lessonIds.add(lessonsLearned.getId());
+		}
+
 		GuiStyle.startUnfocused(theRootPane);	// No button looks pressed on arrival
 	}
 
@@ -138,7 +166,8 @@ public class ViewCuratorMerge {
 	 * This method determines the location, size, font, color, and event handlers for each GUI
 	 * object.</p>
 	 *
-	 * This is a singleton and is only performed once.</p>
+	 * This is a singleton and is only performed once.  Subsequent uses fill in the list using
+	 * the displayCuratorMerge method.</p>
 	 *
 	 */
 	private ViewCuratorMerge() {
@@ -165,12 +194,25 @@ public class ViewCuratorMerge {
 		list_Lessons.setLayoutY(198);
 		list_Lessons.setPrefSize(320, 244);
 		list_Lessons.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-		Label empty = new Label("Lessons with time and effort data will be listed here.");
+		Label empty = new Label("No lessons have time and effort data yet.");
 		empty.setWrapText(true);
 		empty.setMaxWidth(280);
 		GuiStyle.styleMutedLabel(empty);
 		list_Lessons.setPlaceholder(empty);
 		GuiStyle.styleList(list_Lessons);
+		
+		// A click toggles a row, so several lessons can be chosen without holding Ctrl or Shift.
+		list_Lessons.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
+			Node node = e.getPickResult().getIntersectedNode();
+			while (node != null && !(node instanceof ListCell)) node = node.getParent();
+			if (node instanceof ListCell<?> cell && !cell.isEmpty()) {
+				MultipleSelectionModel<String> sm = list_Lessons.getSelectionModel();
+				int i = cell.getIndex();
+				if (sm.getSelectedIndices().contains(i)) sm.clearSelection(i);
+				else sm.select(i);
+				e.consume();	// stops the default "replace the selection" behavior
+			}
+		});
 
 		// The combined summary, on the right.  It cannot be edited: it only shows the result.
 		label_Summary.setLayoutX(420);
@@ -190,8 +232,7 @@ public class ViewCuratorMerge {
 		check_ShowToContributors.setStyle("-fx-text-fill: " + GuiStyle.COLOR_TEXT + ";");
 		check_ShowToContributors.setOnAction((_) -> ControllerCuratorMerge.performVisibilityChange());
 
-		// The line for what a control will do once it is built.  It is muted, not red, because
-		// nothing has gone wrong.
+		// The line for messages.  It is muted, not red, because nothing has gone wrong.
 		label_Message.setLayoutX(70);
 		label_Message.setLayoutY(452);
 		label_Message.setPrefWidth(660);
@@ -218,12 +259,7 @@ public class ViewCuratorMerge {
 				label_Message, button_Merge, button_BackToHome);
 	}
 
-	/*-********************************************************************************************
-
-	Helper methods to reduce code length
-
-	 */
-
+	
 	/**********
 	 * Private local method to place a button in the row of buttons along the bottom of the card.
 	 *

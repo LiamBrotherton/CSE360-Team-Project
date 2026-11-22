@@ -1,5 +1,7 @@
 package testing;
 
+import aiWritingHelper.AlternativesResult;
+import aiWritingHelper.ExamplesResult;
 import aiWritingHelper.ModelAiWritingHelper;
 import aiWritingHelper.StubWritingAssistant;
 import aiWritingHelper.SuggestionResult;
@@ -26,7 +28,10 @@ import inputRecognizer.LessonValidator;
  * <br>R5, a suggestion is never saved until the Contributor accepts it;
  * <br>R6, accepting re-checks ownership, locks, and the text, because they may have changed since
  * the suggestion was made;
- * <br>R7, suggested text is stored as plain data, never run as part of a database command.</p>
+ * <br>R7, suggested text is stored as plain data, never run as part of a database command;
+ * <br>R8, a Contributor can ask for one to five alternatives, each cleaned and checked, and any that
+ * fail are dropped;
+ * <br>R9, searching for examples finds only the Contributor's own lessons.</p>
  *
  * <p> The tests run against the real database, which may already hold lessons.  They create their own
  * Contributors and lessons with unique names and remove only those.</p>
@@ -36,6 +41,8 @@ import inputRecognizer.LessonValidator;
  * @author Dhruv
  *
  * @version 1.00		2026-11-09 Initial version, written before ModelAiWritingHelper (test first)
+ * @version 1.10		2026-11-19 Added R8 (brainstorming) and R9 (search for examples), also written
+ * 							before the code they test
  */
 public class AiWritingHelperTestingAutomation {
 
@@ -54,6 +61,10 @@ public class AiWritingHelperTestingAutomation {
 	private static int lessonId = -1;
 	/** A lesson owned by owner whose title is locked. */
 	private static int lockedLessonId = -1;
+	/** A lesson owned by other, with a title no other test lesson shares. */
+	private static int otherLessonId = -1;
+	/** The one word that only other's lesson contains. */
+	private static String otherWord;
 
 	/**
 	 * Default constructor is not used.  Every method in this class is static.
@@ -75,6 +86,9 @@ public class AiWritingHelperTestingAutomation {
 		RuntimeException toThrow = null;
 		/** How many times suggest was called. */
 		int calls = 0;
+		/** Replies to give, one per call and in order, before falling back to reply.  Lets a test
+		 *  make an assistant that gives different answers to the same request. */
+		java.util.ArrayDeque<String> queue = new java.util.ArrayDeque<>();
 
 		/**
 		 * Default constructor.  A test sets the fields it needs after creating the assistant.
@@ -95,6 +109,7 @@ public class AiWritingHelperTestingAutomation {
 		public String suggest(String field, String currentText, String prompt) {
 			calls++;
 			if (toThrow != null) throw toThrow;
+			if (!queue.isEmpty()) return queue.poll();
 			return reply;
 		}
 	}
@@ -134,6 +149,13 @@ public class AiWritingHelperTestingAutomation {
 			testR5NotSavedUntilAccepted();
 			testR6AcceptRechecks();
 			testR7PlainData();
+
+			// The word is unique to this run so no real lesson can contain it by chance
+			otherWord = "Quokka" + suffix;
+			otherLessonId = database.addLessonForContributor("Notes about " + otherWord,
+					"Body of the other Contributor's lesson.", "Private", other);
+			testR8Alternatives();
+			testR9Examples();
 		} catch (Exception e) {
 			failed++;
 			System.out.println("ERROR: " + e.getMessage());
@@ -143,6 +165,7 @@ public class AiWritingHelperTestingAutomation {
 			if (database != null) {
 				if (lessonId > 0) database.deleteLesson(lessonId);
 				if (lockedLessonId > 0) database.deleteLesson(lockedLessonId);
+				if (otherLessonId > 0) database.deleteLesson(otherLessonId);
 				database.closeConnection();
 			}
 			System.out.println();
@@ -393,6 +416,182 @@ public class AiWritingHelperTestingAutomation {
 		LessonsLearned stored = database.getLessonById(lessonId);
 		checkTest("Test R7.3 - It Was Stored As Text", stored != null && hostile.equals(stored.getBody()), true);
 		checkTest("Test R7.4 - The Lesson Table Still Works", database.getNumberOfLessons() > 0, true);
+	}
+
+	/*****
+	 * R8: brainstorming.  The count is tested at 0, 1, 5, and 6 because those are the edges of the
+	 * allowed range, and at the extreme integers because a count is the one number here that could
+	 * make a loop run for a very long time.
+	 */
+	private static void testR8Alternatives() {
+		section("R8: alternatives");
+		FakeAssistant ai = new FakeAssistant();
+		String f = LessonsLearned.FIELD_TITLE;
+		int[] badCounts = { 0, -1, 6, Integer.MAX_VALUE, Integer.MIN_VALUE };
+		for (int n : badCounts) {
+			ai.calls = 0;
+			AlternativesResult r = ModelAiWritingHelper.requestAlternatives(database, ai, owner,
+					lessonId, f, "shorter", n);
+			checkTest("Test R8.1 - Count " + n + " Is Refused", r.isOk(), false);
+			checkTest("Test R8.1 - Count " + n + " Never Reached The Assistant", ai.calls == 0, true);
+		}
+
+		ai.queue.clear();
+		ai.reply = "One good title";
+		checkTest("Test R8.2 - Count 1 Gives One Alternative",
+				ModelAiWritingHelper.requestAlternatives(database, ai, owner, lessonId, f,
+						"shorter", 1).getTexts().size() == 1, true);
+
+		for (String t : new String[] { "A", "B", "C", "D", "E" }) ai.queue.add("Title " + t);
+		AlternativesResult five = ModelAiWritingHelper.requestAlternatives(database, ai, owner,
+				lessonId, f, "shorter", 5);
+		checkTest("Test R8.3 - Count 5 Gives Five Alternatives", five.getTexts().size() == 5, true);
+		checkTest("Test R8.3 - They Are In The Order Given", five.getTexts().get(0), "Title A");
+
+		// Two over-long titles among five: the three good ones come back and the bad ones are dropped
+		ai.queue.clear();
+		ai.queue.add("Good one");
+		ai.queue.add("x".repeat(LessonValidator.MAX_TITLE_LENGTH + 1));
+		ai.queue.add("Good two");
+		ai.queue.add("x".repeat(LessonValidator.MAX_TITLE_LENGTH + 1));
+		ai.queue.add("Good three");
+		AlternativesResult mixed = ModelAiWritingHelper.requestAlternatives(database, ai, owner,
+				lessonId, f, "shorter", 5);
+		checkTest("Test R8.4 - Bad Alternatives Are Dropped, Good Ones Kept",
+				mixed.getTexts().size() == 3 && mixed.isOk(), true);
+
+		ai.queue.clear();
+		ai.reply = "x".repeat(LessonValidator.MAX_TITLE_LENGTH + 1);
+		AlternativesResult allBad = ModelAiWritingHelper.requestAlternatives(database, ai, owner,
+				lessonId, f, "shorter", 3);
+		checkTest("Test R8.5 - All Bad Alternatives Give A Message", allBad.isOk(), false);
+		checkTest("Test R8.5 - The Message Says They Were Rejected",
+				allBad.getError().contains("rejected"), true);
+
+		// The same answer three times is one alternative, since the Contributor gains nothing from copies
+		ai.reply = "Same title";
+		checkTest("Test R8.6 - Duplicates Are Dropped",
+				ModelAiWritingHelper.requestAlternatives(database, ai, owner, lessonId, f,
+						"shorter", 3).getTexts().size() == 1, true);
+
+		ai.reply = "Hello\u0000 title\u0007";
+		checkTest("Test R8.7 - Control Characters Are Removed From An Alternative",
+				ModelAiWritingHelper.requestAlternatives(database, ai, owner, lessonId, f,
+						"shorter", 1).getTexts().get(0), "Hello title");
+
+		ai.reply = "A fine title";
+		ai.calls = 0;
+		checkTest("Test R8.8 - Another Contributor Is Refused",
+				ModelAiWritingHelper.requestAlternatives(database, ai, other, lessonId, f,
+						"shorter", 3).getError(), ModelAiWritingHelper.NOT_AVAILABLE);
+		AlternativesResult locked = ModelAiWritingHelper.requestAlternatives(database, ai, owner,
+				lockedLessonId, f, "shorter", 3);
+		checkTest("Test R8.8 - A Locked Field Is Refused", locked.getError().contains("locked"), true);
+		checkTest("Test R8.8 - Refused Requests Never Reached The Assistant", ai.calls == 0, true);
+
+		checkTest("Test R8.9 - Blank Request Is Refused",
+				ModelAiWritingHelper.requestAlternatives(database, ai, owner, lessonId, f,
+						"  ", 3).isOk(), false);
+
+		ai.toThrow = new IllegalStateException("service down");
+		checkTest("Test R8.10 - A Throwing Assistant Gives A Message",
+				ModelAiWritingHelper.requestAlternatives(database, ai, owner, lessonId, f,
+						"shorter", 3).getError(), ModelAiWritingHelper.ASSISTANT_UNAVAILABLE);
+		checkTest("Test R8.10 - A Missing Assistant Gives A Message",
+				ModelAiWritingHelper.requestAlternatives(database, null, owner, lessonId, f,
+						"shorter", 3).getError(), ModelAiWritingHelper.ASSISTANT_UNAVAILABLE);
+
+		// The stand-in must give five different, valid answers even for the shortest field
+		StubWritingAssistant stub = new StubWritingAssistant();
+		AlternativesResult stubbed = ModelAiWritingHelper.requestAlternatives(database, stub, owner,
+				lessonId, LessonsLearned.FIELD_CATEGORY, "x".repeat(ModelAiWritingHelper.MAX_PROMPT_LENGTH), 5);
+		checkTest("Test R8.11 - Stub Gives Five Different Categories",
+				stubbed.isOk() && new java.util.HashSet<>(stubbed.getTexts()).size() == 5, true);
+
+		// Asking never changes the lesson (R5 for alternatives)
+		String before = database.getLessonById(lessonId).getTitle();
+		ModelAiWritingHelper.requestAlternatives(database, stub, owner, lessonId, f, "shorter", 3);
+		checkTest("Test R8.12 - Alternatives Are Not Saved",
+				database.getLessonById(lessonId).getTitle(), before);
+	}
+
+	/*****
+	 * R9: searching for examples.  The query is tested at 0, 1, the limit, and one over, and with text
+	 * that would matter if it were used in a database command or a pattern, because the search is
+	 * done over what the Contributor typed.
+	 */
+	private static void testR9Examples() {
+		section("R9: examples");
+
+		ExamplesResult byTitle = ModelAiWritingHelper.findExamples(database, owner, "ai TEST");
+		checkTest("Test R9.1 - Title Match Ignores Case", containsId(byTitle, lessonId), true);
+		checkTest("Test R9.2 - A Non-Matching Lesson Is Not Listed", containsId(byTitle, lockedLessonId), false);
+		checkTest("Test R9.3 - Body Match",
+				containsId(ModelAiWritingHelper.findExamples(database, owner, "DROP TABLE"), lessonId), true);
+		checkTest("Test R9.4 - Category Match",
+				containsId(ModelAiWritingHelper.findExamples(database, owner, "testing"), lessonId), true);
+
+		// The central rule: another Contributor's lesson is never listed
+		ExamplesResult theirWord = ModelAiWritingHelper.findExamples(database, owner, otherWord);
+		checkTest("Test R9.5 - Another Contributor's Lesson Is Never Listed",
+				theirWord.isOk() && theirWord.getLessons().isEmpty(), true);
+		checkTest("Test R9.6 - The Other Contributor Can Find It",
+				containsId(ModelAiWritingHelper.findExamples(database, other, otherWord), otherLessonId), true);
+		boolean allOwn = true;
+		for (LessonsLearned l : ModelAiWritingHelper.findExamples(database, owner, "e").getLessons()) {
+			if (!owner.equals(l.getAddedBy())) allOwn = false;
+		}
+		checkTest("Test R9.7 - Every Result Belongs To The Searcher", allOwn, true);
+
+		checkTest("Test R9.8 - No Match Is A Success With No Lessons",
+				ModelAiWritingHelper.findExamples(database, owner, "zzzNoSuchWordzzz").isOk(), true);
+		checkTest("Test R9.8 - ... And The List Is Empty",
+				ModelAiWritingHelper.findExamples(database, owner, "zzzNoSuchWordzzz").getLessons().isEmpty(), true);
+
+		int max = ModelAiWritingHelper.MAX_QUERY_LENGTH;
+		checkTest("Test R9.9 - Null Query Is Refused",
+				ModelAiWritingHelper.findExamples(database, owner, null).isOk(), false);
+		checkTest("Test R9.9 - Empty Query Is Refused",
+				ModelAiWritingHelper.findExamples(database, owner, "").isOk(), false);
+		checkTest("Test R9.9 - Whitespace Query Is Refused",
+				ModelAiWritingHelper.findExamples(database, owner, "  \t ").isOk(), false);
+		checkTest("Test R9.10 - One Character Is Allowed",
+				ModelAiWritingHelper.findExamples(database, owner, "a").isOk(), true);
+		checkTest("Test R9.10 - Exactly The Limit Is Allowed",
+				ModelAiWritingHelper.findExamples(database, owner, "a".repeat(max)).isOk(), true);
+		checkTest("Test R9.10 - One Over The Limit Is Refused",
+				ModelAiWritingHelper.findExamples(database, owner, "a".repeat(max + 1)).isOk(), false);
+
+		// Text that is special in a database command or a pattern is just text here
+		String[] special = { "' OR '1'='1", "%", "_", ".*", "\\" };
+		for (String q : special) {
+			ExamplesResult r = ModelAiWritingHelper.findExamples(database, owner, q);
+			checkTest("Test R9.11 - Query " + q + " Is Searched As Plain Text",
+					r.isOk() && r.getLessons().stream().allMatch(l -> owner.equals(l.getAddedBy())), true);
+		}
+		checkTest("Test R9.11 - ... And It Does Not Match Everything",
+				ModelAiWritingHelper.findExamples(database, owner, "%").getLessons().size()
+						< database.getLessonsForContributor(owner).getLessons().size(), true);
+
+		checkTest("Test R9.12 - Null Username Is Refused",
+				ModelAiWritingHelper.findExamples(database, null, "ai").getError(),
+				ModelAiWritingHelper.NOT_AVAILABLE);
+		checkTest("Test R9.12 - Blank Username Is Refused",
+				ModelAiWritingHelper.findExamples(database, "  ", "ai").getError(),
+				ModelAiWritingHelper.NOT_AVAILABLE);
+	}
+
+	/*****
+	 * Tells whether a search found the lesson with the given ID.
+	 *
+	 * @param result	the search result
+	 * @param id		the lesson ID to look for
+	 *
+	 * @return true if that lesson is among the matches
+	 */
+	private static boolean containsId(ExamplesResult result, int id) {
+		for (LessonsLearned l : result.getLessons()) if (l.getId() == id) return true;
+		return false;
 	}
 
 	/*****

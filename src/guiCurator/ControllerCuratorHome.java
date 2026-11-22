@@ -109,4 +109,10 @@ public class ControllerCuratorHome {
 	protected static void performQuit() {
 		System.exit(0);
 	}
+	
+	// Here is the new performAITools method
+    protected static void performAITools() {
+        guiCuratorAI.ViewCuratorAI.displayCuratorAI(
+                ViewCuratorHome.theStage, ViewCuratorHome.theUser);
+    }
 }
