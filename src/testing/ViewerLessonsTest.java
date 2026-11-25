@@ -3,6 +3,7 @@ package testing;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -185,5 +186,78 @@ public class ViewerLessonsTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> ModelViewerLessons.rowText(null));
+    }
+    
+    /*** New Tests***/
+    
+    /**
+     * Verifies that keyword searching finds lessons by title, category, and body.
+     */
+    @Test
+    public void testSearchFindsMatchingLessons() {
+
+        LessonsLearned first = new LessonsLearned(
+                1, "Database Design", "Table normalization",
+                "Architecture", false, false, false,
+                null, null, null, null, "ContributorA");
+
+        LessonsLearned second = new LessonsLearned(
+                2, "Secure Coding", "Database access protection",
+                "Security", false, false, false,
+                null, null, null, null, "ContributorB");
+
+        LessonsLearned third = new LessonsLearned(
+                3, "Project Planning", "Scheduling tasks",
+                "Management", false, false, false,
+                null, null, null, null, "ContributorC");
+
+        LessonsLearnedList allLessons = new LessonsLearnedList(Arrays.asList(first, second, third));
+
+        LessonsLearnedList results = ModelViewerLessons.filterLessons(allLessons, "DATABASE");
+
+        assertEquals(2, results.size());
+        assertEquals(1, results.get(0).getId());
+        assertEquals(2, results.get(1).getId());
+    }
+
+    /**
+     * Verifies that a search with no matching keyword returns an empty list.
+     */
+    @Test
+    public void testSearchReturnsEmptyWhenNoMatches() {
+
+        LessonsLearned lesson = new LessonsLearned(
+                1, "Database Design", "Table normalization",
+                "Architecture", false, false, false,
+                null, null, null, null, "ContributorA");
+
+        LessonsLearnedList allLessons = new LessonsLearnedList(Arrays.asList(lesson));
+
+        LessonsLearnedList results = ModelViewerLessons.filterLessons(allLessons, "nonexistentkeyword");
+
+        assertTrue(results.isEmpty());
+    }
+
+    /**
+     * Verifies that an empty keyword returns all lessons.
+     */
+    @Test
+    public void testEmptyKeywordReturnsAllLessons() {
+
+        LessonsLearned first = new LessonsLearned(
+                1, "Database Design", "Table normalization",
+                "Architecture", false, false, false,
+                null, null, null, null, "ContributorA");
+
+        LessonsLearned second = new LessonsLearned(
+                2, "Secure Coding", "Input validation",
+                "Security", false, false, false,
+                null, null, null, null, "ContributorB");
+
+        LessonsLearnedList allLessons = new LessonsLearnedList(Arrays.asList(first, second));
+
+        LessonsLearnedList results = ModelViewerLessons.filterLessons(allLessons, "");
+
+        assertEquals(2, results.size());
     }
 }

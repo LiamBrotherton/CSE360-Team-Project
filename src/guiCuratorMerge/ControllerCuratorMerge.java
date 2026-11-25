@@ -1,5 +1,9 @@
 package guiCuratorMerge;
 
+import java.util.ArrayList;
+import java.util.List;
+import entityClasses.LessonsLearned;
+
 /*******
  * <p> Title: ControllerCuratorMerge Class. </p>
  *
@@ -19,9 +23,11 @@ package guiCuratorMerge;
  *
  * @author Dhruv
  * @author Hassan Mohamed (visibility integration)
+ * @author Liam Brotherton
  *
  * @version 1.00		2026-11-15 Initial version
  * @version 1.10        2026-11-19 Save checkbox changes
+ * @version 1.20		2026-11-22 Merge reads the chosen lessons and requires at least two
  */
 
 public class ControllerCuratorMerge {
@@ -34,6 +40,12 @@ public class ControllerCuratorMerge {
 	static methods that can be called by the View, which is a singleton instantiated object.
 
 	 */
+	/** The message shown when the database refuses to store a lesson that passed every check. */
+	public static final String SAVE_FAILED = "The lesson could not be saved. Try again.";
+	
+	/** The ID the database gave the most recently added lesson, or -1 if the last add stored
+	 *  nothing.  The page uses it to know the add succeeded; the tests use it to find the lesson. */
+	public static int lastAddedId = -1;
 
 	/**
 	 * Default constructor is not used.
@@ -44,13 +56,64 @@ public class ControllerCuratorMerge {
 	/**********
 	 * <p> Method: performMerge() </p>
 	 *
-	 * <p> Description: This method will merge the time and effort data of the lessons chosen in the
-	 * list into one statistical summary.  It is not built yet, so it only says so. </p>
+	 * <p> Description: This method reads the lessons chosen in the list, requires at least two, and
+	 * will merge their time and effort data into one statistical summary.  The merge itself is not
+	 * built yet, so after the check it only says so. </p>
 	 *
 	 */
-	protected static void performMerge() {
-		ViewCuratorMerge.label_Message.setText("Merging is not built yet.  "
-				+ "Once it is, the chosen lessons will be combined into one summary.");
+	protected static String performMerge() {
+
+		// Turn the chosen rows back into lesson IDs
+		List<Integer> chosenIds = new ArrayList<>();
+		for (int index : ViewCuratorMerge.list_Lessons.getSelectionModel().getSelectedIndices()) {
+			chosenIds.add(ViewCuratorMerge.lessonIds.get(index));
+		}
+
+		if (chosenIds.size() < 2) {
+			ViewCuratorMerge.label_Message.setText("Choose at least two lessons to merge.");
+			return "";
+		}
+
+		ViewCuratorMerge.label_Message.setText(chosenIds.size() + " lessons merged");
+		
+		StringBuilder Time = new StringBuilder();
+		for (int id : chosenIds) {
+			LessonsLearned lesson = ViewCuratorMerge.theDatabase.getLessonById(id);	
+			if (Time.length() > 0) Time.append(" + ");
+			Time.append(lesson.getEffort());								
+		}
+		
+		StringBuilder Effort = new StringBuilder();
+		for (int id : chosenIds) {
+			LessonsLearned lesson = ViewCuratorMerge.theDatabase.getLessonById(id);	
+			if (Effort.length() > 0) Effort.append(" + ");
+			Effort.append(lesson.getEffort());								
+		}
+		
+		StringBuilder Title = new StringBuilder();
+		for (int id : chosenIds) {
+			LessonsLearned lesson = ViewCuratorMerge.theDatabase.getLessonById(id);	
+			if (Title.length() > 0) Title.append(" + ");
+			Title.append(lesson.getTitle());								
+		}
+		
+		String body = "Time and Effort merge of " + Title;
+		
+		String username = ViewCuratorMerge.theUser.getUserName();
+		
+		ViewCuratorMerge.area_Summary.setText(
+				"Lessons merged: " + chosenIds.size() + "\n"
+				+ "Time: " + Time.toString() + "\n"
+				+ "Effort: " + Effort.toString());
+		
+		lastAddedId = -1;
+		int id = ViewCuratorMerge.theDatabase.addLesson(Title.toString(), body, "Time and Effort Merge", username);
+		if (id < 0) return SAVE_FAILED;
+		
+		boolean saved = ViewCuratorMerge.theDatabase.addExperienceInformation(id, " ",
+                " ", Time.toString(), Effort.toString());
+        return saved ? "" : SAVE_FAILED;
+		
 	}
 
 	/**********
