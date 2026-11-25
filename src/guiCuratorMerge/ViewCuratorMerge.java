@@ -22,8 +22,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-import database.Database;
-import entityClasses.LessonsLearned;
 import entityClasses.LessonsLearnedList;
 import entityClasses.User;
 import guiTools.GuiStyle;
@@ -94,8 +92,7 @@ public class ViewCuratorMerge {
 	private static Label label_TargetLesson = new Label("Saved summary for lesson");
 	protected static ComboBox<String> combo_TargetLesson = new ComboBox<>();
 	protected static Map<String, Integer> targetLessonIds = new HashMap<>();
-	private static Database theDatabase = applicationMain.FoundationsMain.database;
-	private static TextArea area_Summary = new TextArea();
+	protected static TextArea area_Summary = new TextArea();
 
 	/** Whether Contributors can see the combined summary.  Off, so the summary stays with the
 	 *  Curator until the Curator chooses otherwise. */

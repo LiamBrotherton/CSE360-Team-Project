@@ -41,11 +41,7 @@ public class ControllerCuratorMerge {
 
 	 */
 	/** The message shown when the database refuses to store a lesson that passed every check. */
-	public static final String SAVE_FAILED = "The lesson could not be saved. Try again.";
-	
-	/** The ID the database gave the most recently added lesson, or -1 if the last add stored
-	 *  nothing.  The page uses it to know the add succeeded; the tests use it to find the lesson. */
-	public static int lastAddedId = -1;
+	public static final String SAVE_FAILED = "The summary could not be saved. Try again.";
 
 	/**
 	 * Default constructor is not used.
@@ -61,7 +57,7 @@ public class ControllerCuratorMerge {
 	 * built yet, so after the check it only says so. </p>
 	 *
 	 */
-	protected static String performMerge() {
+	protected static void performMerge() {
 
 		// Turn the chosen rows back into lesson IDs
 		List<Integer> chosenIds = new ArrayList<>();
@@ -71,7 +67,7 @@ public class ControllerCuratorMerge {
 
 		if (chosenIds.size() < 2) {
 			ViewCuratorMerge.label_Message.setText("Choose at least two lessons to merge.");
-			return "";
+			return;
 		}
 
 		ViewCuratorMerge.label_Message.setText(chosenIds.size() + " lessons merged");
@@ -97,22 +93,17 @@ public class ControllerCuratorMerge {
 			Title.append(lesson.getTitle());								
 		}
 		
-		String body = "Time and Effort merge of " + Title;
-		
-		String username = ViewCuratorMerge.theUser.getUserName();
-		
-		ViewCuratorMerge.area_Summary.setText(
-				"Lessons merged: " + chosenIds.size() + "\n"
+		String summary = "Lessons merged: " + chosenIds.size() + ", "+ Title.toString() + "\n"
 				+ "Time: " + Time.toString() + "\n"
-				+ "Effort: " + Effort.toString());
+				+ "Effort: " + Effort.toString();
 		
-		lastAddedId = -1;
-		int id = ViewCuratorMerge.theDatabase.addLesson(Title.toString(), body, "Time and Effort Merge", username);
-		if (id < 0) return SAVE_FAILED;
-		
-		boolean saved = ViewCuratorMerge.theDatabase.addExperienceInformation(id, " ",
-                " ", Time.toString(), Effort.toString());
-        return saved ? "" : SAVE_FAILED;
+		ViewCuratorMerge.area_Summary.setText(summary);
+		for (int id : chosenIds) {
+			if (!ViewCuratorMerge.theDatabase.saveCuratorSummary(id, summary, ViewCuratorMerge.theUser)) {
+				ViewCuratorMerge.label_Message.setText(SAVE_FAILED);
+			}
+		}
+		return;
 		
 	}
 
